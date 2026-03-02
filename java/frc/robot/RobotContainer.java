@@ -186,6 +186,9 @@ public class RobotContainer {
             () -> shooter.getTargetPowerForDistanceInches(
                 drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))));
 
+    // Driver one climb setup assist: auto-drive to configured climb pose when approved tags are visible.
+    driverOne.x().onTrue(createAutoDriveToClimbSetupCommand());
+
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
