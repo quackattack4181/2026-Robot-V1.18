@@ -138,13 +138,19 @@ public class RobotContainer {
     NamedCommands.registerCommand("runPause5", Commands.waitSeconds(5.0));
     NamedCommands.registerCommand("runDriveToClimbSetupLeft", createAutoDriveToClimbSetupCommand(
         ClimbSetupConstants.LEFT_TARGET_POSE,
-        true));
+        ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
+        ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
+        ClimbSetupConstants.LEFT_TARGET_TA_PERCENT));
     NamedCommands.registerCommand("runDriveToClimbSetupRight", createAutoDriveToClimbSetupCommand(
         ClimbSetupConstants.RIGHT_TARGET_POSE,
-        false));
+        ClimbSetupConstants.RIGHT_TARGET_TX_DEGREES,
+        ClimbSetupConstants.RIGHT_TARGET_TY_DEGREES,
+        ClimbSetupConstants.RIGHT_TARGET_TA_PERCENT));
     NamedCommands.registerCommand("runDriveToClimbSetup", createAutoDriveToClimbSetupCommand(
         ClimbSetupConstants.LEFT_TARGET_POSE,
-        true));
+        ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
+        ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
+        ClimbSetupConstants.LEFT_TARGET_TA_PERCENT));
 
     // Auto-discover PathPlanner autos/paths from deploy and publish to Elastic.
     loadAutoOptions();
@@ -195,8 +201,16 @@ public class RobotContainer {
             intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
 
     // Driver one climb setup assist: hold X for left pose, hold B for right pose.
-    driverOne.x().whileTrue(createAutoDriveToClimbSetupCommand(ClimbSetupConstants.LEFT_TARGET_POSE, true));
-    driverOne.b().whileTrue(createAutoDriveToClimbSetupCommand(ClimbSetupConstants.RIGHT_TARGET_POSE, false));
+    driverOne.x().whileTrue(createAutoDriveToClimbSetupCommand(
+        ClimbSetupConstants.LEFT_TARGET_POSE,
+        ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
+        ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
+        ClimbSetupConstants.LEFT_TARGET_TA_PERCENT));
+    driverOne.b().whileTrue(createAutoDriveToClimbSetupCommand(
+        ClimbSetupConstants.RIGHT_TARGET_POSE,
+        ClimbSetupConstants.RIGHT_TARGET_TX_DEGREES,
+        ClimbSetupConstants.RIGHT_TARGET_TY_DEGREES,
+        ClimbSetupConstants.RIGHT_TARGET_TA_PERCENT));
 
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
@@ -233,7 +247,10 @@ public class RobotContainer {
     drivebase.zeroGyro();
   }
 
-  private Command createAutoDriveToClimbSetupCommand(Pose2d requestedPose, boolean useLimelightSnapshot) {
+  private Command createAutoDriveToClimbSetupCommand(Pose2d requestedPose,
+                                                      double snapshotTx,
+                                                      double snapshotTy,
+                                                      double snapshotTa) {
     final double[] alignedHeadingDegrees = {ClimbSetupConstants.TARGET_HEADING_DEGREES};
 
     Command waitForClimbTag = Commands.waitUntil(
@@ -263,21 +280,17 @@ public class RobotContainer {
                     positionToleranceMeters,
                     ClimbSetupConstants.HEADING_TOLERANCE_DEGREES);
 
-                if (!useLimelightSnapshot) {
-                  return nearPose;
-                }
-
-                boolean nearLeftSnapshot = drivebase.isNearLimelightSnapshot(
+                boolean nearSnapshot = drivebase.isNearLimelightSnapshot(
                     VisionConstants.LIMELIGHT_NAME,
                     VisionConstants.CLIMBER_APPROVED_TAG_IDS,
-                    ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
-                    ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
-                    ClimbSetupConstants.LEFT_TARGET_TA_PERCENT,
+                    snapshotTx,
+                    snapshotTy,
+                    snapshotTa,
                     ClimbSetupConstants.LIMELIGHT_TX_TOLERANCE_DEGREES,
                     ClimbSetupConstants.LIMELIGHT_TY_TOLERANCE_DEGREES,
                     ClimbSetupConstants.LIMELIGHT_TA_TOLERANCE_PERCENT);
 
-                return nearPose || nearLeftSnapshot;
+                return nearPose || nearSnapshot;
               })
               .withTimeout(ClimbSetupConstants.APPROACH_TIMEOUT_SECONDS);
         },

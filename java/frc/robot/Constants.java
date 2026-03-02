@@ -92,6 +92,10 @@ public final class Constants
     // Update these values after parking robot where you want to start climb on the right side.
     public static final double RIGHT_TARGET_X_METERS = 1.50;
     public static final double RIGHT_TARGET_Y_METERS = 5.20;
+    // Right-side Limelight snapshot target (update with measured values when available).
+    public static final double RIGHT_TARGET_TX_DEGREES = -5.08;
+    public static final double RIGHT_TARGET_TY_DEGREES = -12.53;
+    public static final double RIGHT_TARGET_TA_PERCENT = 0.351;
 
     // Fallback heading if tag alignment capture doesn't complete.
     public static final double TARGET_HEADING_DEGREES = 180.0;
