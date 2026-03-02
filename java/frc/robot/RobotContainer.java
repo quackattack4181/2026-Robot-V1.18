@@ -123,12 +123,8 @@ public class RobotContainer {
     // "runShooterOn" now mimics driver behavior: auto-aim while shooting.
     NamedCommands.registerCommand("runShooterOn", createAutoAimAndShootCommand(5.0));
     NamedCommands.registerCommand("runShooterOff", shooter.stopShooterCommand());
-    NamedCommands.registerCommand("runShooterFor1Sec", shooter.runShooterForSeconds(
-        1.0,
-        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
-    NamedCommands.registerCommand("runShooterFor2Sec", shooter.runShooterForSeconds(
-        2.0,
-        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runShooterFor1Sec", createAutoAimAndShootCommand(1.0));
+    NamedCommands.registerCommand("runShooterFor2Sec", createAutoAimAndShootCommand(2.0));
     NamedCommands.registerCommand("runShooterFor3Sec", createAutoAimAndShootCommand(3.0));
     NamedCommands.registerCommand("runAimAndShootFor3Sec", createAutoAimAndShootCommand(3.0));
     NamedCommands.registerCommand("runShooterFor4Sec", createAutoAimAndShootCommand(4.0));
@@ -192,9 +188,11 @@ public class RobotContainer {
                  VisionConstants.LIMELIGHT_NAME));
 
     driverOne.leftTrigger(0.5).and(driverOne.rightTrigger(0.5)).whileTrue(
-        shooter.runShooterPower(
-            () -> shooter.getTargetPowerForDistanceInches(
-                drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))));
+        Commands.parallel(
+            shooter.runShooterPower(
+                () -> shooter.getTargetPowerForDistanceInches(
+                    drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))),
+            intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
 
     // Driver one climb setup assist: hold X for left pose, hold B for right pose.
     driverOne.x().whileTrue(createAutoDriveToClimbSetupCommand(ClimbSetupConstants.LEFT_TARGET_POSE, true));
@@ -301,8 +299,9 @@ public class RobotContainer {
     Command autoShoot = shooter.runShooterForSeconds(
         seconds,
         () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME));
+    Command autoIntakeWheels = intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER);
 
-    return Commands.deadline(autoShoot, autoAim);
+    return Commands.deadline(autoShoot, autoAim, autoIntakeWheels);
   }
 
   private void loadAutoOptions() {
