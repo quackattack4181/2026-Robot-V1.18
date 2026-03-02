@@ -251,7 +251,16 @@ public class RobotContainer {
                                                       double snapshotTx,
                                                       double snapshotTy,
                                                       double snapshotTa) {
-    final double[] alignedHeadingDegrees = {ClimbSetupConstants.TARGET_HEADING_DEGREES};
+    Command rotateForward = Commands.defer(
+        () -> {
+          double currentHeading = drivebase.getHeading().getDegrees();
+          double deltaDegrees = MathUtil.inputModulus(
+              ClimbSetupConstants.TARGET_HEADING_DEGREES - currentHeading,
+              -180.0,
+              180.0);
+          return drivebase.rotateByDegreesCommand(deltaDegrees, ClimbSetupConstants.TAG_ALIGN_TIMEOUT_SECONDS);
+        },
+        java.util.Set.of(drivebase));
 
     Command waitForClimbTag = Commands.waitUntil(
         () -> drivebase.hasAnyLimelightTargetFromList(
@@ -259,16 +268,12 @@ public class RobotContainer {
             VisionConstants.CLIMBER_APPROVED_TAG_IDS))
         .withTimeout(ClimbSetupConstants.TAG_ACQUIRE_TIMEOUT_SECONDS);
 
-    Command alignStraightToTag = drivebase.aimAtLimelightTarget(VisionConstants.LIMELIGHT_NAME)
-        .withTimeout(ClimbSetupConstants.TAG_ALIGN_TIMEOUT_SECONDS)
-        .andThen(Commands.runOnce(() -> alignedHeadingDegrees[0] = drivebase.getHeading().getDegrees()));
-
     Command driveToClimbPose = Commands.defer(
         () -> {
           Pose2d climbPose = new Pose2d(
               requestedPose.getX(),
               requestedPose.getY(),
-              Rotation2d.fromDegrees(alignedHeadingDegrees[0]));
+              Rotation2d.fromDegrees(ClimbSetupConstants.TARGET_HEADING_DEGREES));
 
           double positionToleranceMeters = edu.wpi.first.math.util.Units
               .inchesToMeters(ClimbSetupConstants.POSITION_TOLERANCE_INCHES);
@@ -298,9 +303,8 @@ public class RobotContainer {
 
     return Commands.sequence(
             waitForClimbTag,
-            alignStraightToTag,
-            driveToClimbPose,
-            Commands.runOnce(drivebase::lock))
+            rotateForward,
+            driveToClimbPose)
         .andThen(Commands.idle(drivebase));
   }
 

@@ -99,8 +99,8 @@ public final class Constants
     public static final double RIGHT_TARGET_TY_DEGREES = LEFT_TARGET_TY_DEGREES;
     public static final double RIGHT_TARGET_TA_PERCENT = LEFT_TARGET_TA_PERCENT;
 
-    // Fallback heading if tag alignment capture doesn't complete.
-    public static final double TARGET_HEADING_DEGREES = 180.0;
+    // Forward-facing lineup heading (same orientation as right-stick aiming forward).
+    public static final double TARGET_HEADING_DEGREES = 0.0;
 
     public static final Pose2d LEFT_TARGET_POSE = new Pose2d(
         LEFT_TARGET_X_METERS,
