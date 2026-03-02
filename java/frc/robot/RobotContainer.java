@@ -117,9 +117,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("runIntakeWheelsOn", Commands.startEnd(
         () -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER),
         intakePivot::stopWheels).withTimeout(5.0));
-    NamedCommands.registerCommand("runShooterOn", shooter.runShooterForSeconds(
-        5.0,
-        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    // "runShooterOn" now mimics driver behavior: auto-aim while shooting.
+    NamedCommands.registerCommand("runShooterOn", createAutoAimAndShootCommand(5.0));
     NamedCommands.registerCommand("runShooterOff", shooter.stopShooterCommand());
     NamedCommands.registerCommand("runShooterFor1Sec", shooter.runShooterForSeconds(
         1.0,
@@ -127,25 +126,15 @@ public class RobotContainer {
     NamedCommands.registerCommand("runShooterFor2Sec", shooter.runShooterForSeconds(
         2.0,
         () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
-    NamedCommands.registerCommand("runShooterFor3Sec", shooter.runShooterForSeconds(
-        3.0,
-        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runShooterFor3Sec", createAutoAimAndShootCommand(3.0));
     NamedCommands.registerCommand("runAimAndShootFor3Sec", createAutoAimAndShootCommand(3.0));
-    NamedCommands.registerCommand("runShooterFor4Sec", shooter.runShooterForSeconds(
-        4.0,
-        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runShooterFor4Sec", createAutoAimAndShootCommand(4.0));
     NamedCommands.registerCommand("runAimAndShootFor4Sec", createAutoAimAndShootCommand(4.0));
-    NamedCommands.registerCommand("runShooterFor5Sec", shooter.runShooterForSeconds(
-        5.0,
-        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runShooterFor5Sec", createAutoAimAndShootCommand(5.0));
     NamedCommands.registerCommand("runAimAndShootFor5Sec", createAutoAimAndShootCommand(5.0));
-    NamedCommands.registerCommand("runShooterFor6Sec", shooter.runShooterForSeconds(
-        6.0,
-        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runShooterFor6Sec", createAutoAimAndShootCommand(6.0));
     NamedCommands.registerCommand("runAimAndShootFor6Sec", createAutoAimAndShootCommand(6.0));
-    NamedCommands.registerCommand("runShooterFor7Sec", shooter.runShooterForSeconds(
-        7.0,
-        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runShooterFor7Sec", createAutoAimAndShootCommand(7.0));
     NamedCommands.registerCommand("runAimAndShootFor7Sec", createAutoAimAndShootCommand(7.0));
     NamedCommands.registerCommand("runPause5", Commands.waitSeconds(5.0));
 
