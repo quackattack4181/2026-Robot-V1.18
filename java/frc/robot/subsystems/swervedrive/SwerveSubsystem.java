@@ -735,6 +735,16 @@ public class SwerveSubsystem extends SubsystemBase
     return swerveDrive.getPose();
   }
 
+  public boolean isNearPose(Pose2d targetPose, double positionToleranceMeters, double headingToleranceDegrees)
+  {
+    Pose2d currentPose = getPose();
+    double positionErrorMeters = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+    double headingErrorDegrees = Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
+
+    return positionErrorMeters <= positionToleranceMeters
+           && headingErrorDegrees <= headingToleranceDegrees;
+  }
+
   /**
    * Set chassis speeds with closed-loop velocity control.
    *

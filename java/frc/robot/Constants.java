@@ -90,9 +90,12 @@ public final class Constants
         TARGET_Y_METERS,
         Rotation2d.fromDegrees(TARGET_HEADING_DEGREES));
 
-    public static final double APPROACH_TIMEOUT_SECONDS = 4.0;
+    public static final double APPROACH_TIMEOUT_SECONDS = 5.0;
     public static final double TAG_ACQUIRE_TIMEOUT_SECONDS = 2.0;
     public static final double TAG_ALIGN_TIMEOUT_SECONDS = 1.5;
+    // Final climb dial-in tolerance: start around 6-12 inches and tune from there.
+    public static final double POSITION_TOLERANCE_INCHES = 6.0;
+    public static final double HEADING_TOLERANCE_DEGREES = 2.0;
   }
 
   public static final class ShooterConstants

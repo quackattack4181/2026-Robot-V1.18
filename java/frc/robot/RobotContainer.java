@@ -245,7 +245,15 @@ public class RobotContainer {
               ClimbSetupConstants.TARGET_X_METERS,
               ClimbSetupConstants.TARGET_Y_METERS,
               Rotation2d.fromDegrees(alignedHeadingDegrees[0]));
+
+          double positionToleranceMeters = edu.wpi.first.math.util.Units
+              .inchesToMeters(ClimbSetupConstants.POSITION_TOLERANCE_INCHES);
+
           return drivebase.driveToPose(climbPose)
+              .until(() -> drivebase.isNearPose(
+                  climbPose,
+                  positionToleranceMeters,
+                  ClimbSetupConstants.HEADING_TOLERANCE_DEGREES))
               .withTimeout(ClimbSetupConstants.APPROACH_TIMEOUT_SECONDS);
         },
         java.util.Set.of(drivebase));
