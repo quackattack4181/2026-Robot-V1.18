@@ -53,10 +53,8 @@ public class RobotContainer {
 
   private static final String AUTO_SELECTED_KEY = "Auto Selected";
   private static final String AUTO_OPTIONS_KEY = "Auto Options";
-  private static final String AUTO_SELECTED_INDEX_KEY = "Auto Selected Index";
   private final NetworkTableEntry autoSelectedEntry;
   private final NetworkTableEntry autoOptionsEntry;
-  private final NetworkTableEntry autoSelectedIndexEntry;
   private final Map<String, Command> autoOptions = new LinkedHashMap<>();
   private final SendableChooser<String> autoChooser = new SendableChooser<>();
 
@@ -112,7 +110,6 @@ public class RobotContainer {
     NetworkTable elasticTable = NetworkTableInstance.getDefault().getTable("Elastic");
     autoSelectedEntry = elasticTable.getEntry(AUTO_SELECTED_KEY);
     autoOptionsEntry = elasticTable.getEntry(AUTO_OPTIONS_KEY);
-    autoSelectedIndexEntry = elasticTable.getEntry(AUTO_SELECTED_INDEX_KEY);
 
     NamedCommands.registerCommand("runAlignToTag", drivebase.aimAtLimelightTarget(VisionConstants.LIMELIGHT_NAME));
     NamedCommands.registerCommand("runIntakePivotOut", intakePivot.moveToOutAngleCommand());
@@ -351,7 +348,6 @@ public class RobotContainer {
     autoOptionsEntry.setStringArray(optionNames);
     if (autoOptions.isEmpty()) {
       autoSelectedEntry.setString("");
-      autoSelectedIndexEntry.setInteger(-1);
       SmartDashboard.putData("Auto Chooser", autoChooser);
       return;
     }
@@ -365,7 +361,6 @@ public class RobotContainer {
     }
     SmartDashboard.putData("Auto Chooser", autoChooser);
     autoSelectedEntry.setString(defaultSelection);
-    autoSelectedIndexEntry.setInteger(0);
   }
 
 
@@ -381,44 +376,22 @@ public class RobotContainer {
       return null;
     }
 
-    String[] optionNames = autoOptions.keySet().toArray(new String[0]);
-    String fallbackAuto = optionNames[0];
+    String fallbackAuto = autoOptions.keySet().iterator().next();
 
-    // 1) Prefer explicit named selection from Elastic (dropdown/list by names).
-    String selectedByName = autoSelectedEntry.getString("");
+    // Elastic single-source selection by auto name.
+    String selectedByName = autoSelectedEntry.getString(fallbackAuto);
     if (selectedByName != null && autoOptions.containsKey(selectedByName)) {
-      for (int i = 0; i < optionNames.length; i++) {
-        if (optionNames[i].equals(selectedByName)) {
-          autoSelectedIndexEntry.setInteger(i);
-          break;
-        }
-      }
       return autoOptions.get(selectedByName);
     }
 
-    // 2) Fallback to numeric index selection.
-    int selectedIndex = (int) autoSelectedIndexEntry.getInteger(0);
-    if (selectedIndex >= 0 && selectedIndex < optionNames.length) {
-      String selectedByIndex = optionNames[selectedIndex];
-      autoSelectedEntry.setString(selectedByIndex);
-      return autoOptions.get(selectedByIndex);
-    }
-
-    // 3) Fallback to chooser selection if available.
+    // Optional local chooser fallback if Elastic selection is invalid.
     String chooserSelection = autoChooser.getSelected();
     if (chooserSelection != null && autoOptions.containsKey(chooserSelection)) {
       autoSelectedEntry.setString(chooserSelection);
-      for (int i = 0; i < optionNames.length; i++) {
-        if (optionNames[i].equals(chooserSelection)) {
-          autoSelectedIndexEntry.setInteger(i);
-          break;
-        }
-      }
       return autoOptions.get(chooserSelection);
     }
 
     autoSelectedEntry.setString(fallbackAuto);
-    autoSelectedIndexEntry.setInteger(0);
     return autoOptions.get(fallbackAuto);
   }
 
