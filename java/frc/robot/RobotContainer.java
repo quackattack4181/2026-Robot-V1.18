@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.ClimbSetupConstants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OperatorConstants;
@@ -137,6 +138,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("runShooterFor7Sec", createAutoAimAndShootCommand(7.0));
     NamedCommands.registerCommand("runAimAndShootFor7Sec", createAutoAimAndShootCommand(7.0));
     NamedCommands.registerCommand("runPause5", Commands.waitSeconds(5.0));
+    NamedCommands.registerCommand("runDriveToClimbSetup", createAutoDriveToClimbSetupCommand());
 
     // Auto-discover PathPlanner autos/paths from deploy and publish to Elastic.
     loadAutoOptions();
@@ -217,6 +219,15 @@ public class RobotContainer {
 
   public void zeroDriverHeading() {
     drivebase.zeroGyro();
+  }
+
+  private Command createAutoDriveToClimbSetupCommand() {
+    return drivebase.driveToPoseWhenTagSeen(
+        ClimbSetupConstants.TARGET_POSE,
+        VisionConstants.LIMELIGHT_NAME,
+        VisionConstants.CLIMBER_APPROVED_TAG_IDS,
+        ClimbSetupConstants.TAG_ACQUIRE_TIMEOUT_SECONDS,
+        ClimbSetupConstants.APPROACH_TIMEOUT_SECONDS);
   }
 
   private Command createAutoAimAndShootCommand(double seconds) {

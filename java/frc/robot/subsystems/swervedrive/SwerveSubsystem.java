@@ -90,6 +90,12 @@ public class SwerveSubsystem extends SubsystemBase
    */
   private final NetworkTableEntry limelightDistanceFeetEntry =
       NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Limelight Distance (ft)");
+  private final NetworkTableEntry robotPoseXEntry =
+      NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Robot Pose X (m)");
+  private final NetworkTableEntry robotPoseYEntry =
+      NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Robot Pose Y (m)");
+  private final NetworkTableEntry robotPoseHeadingEntry =
+      NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Robot Pose Heading (deg)");
   /**
    * Last valid Limelight distance to avoid publishing NaN and blanking dashboard widgets.
    */
@@ -187,6 +193,11 @@ public class SwerveSubsystem extends SubsystemBase
 
     limelightDistanceInchesEntry.setDouble(lastValidLimelightDistanceInches);
     limelightDistanceFeetEntry.setDouble(lastValidLimelightDistanceInches / 12.0);
+
+    Pose2d pose = getPose();
+    robotPoseXEntry.setDouble(pose.getX());
+    robotPoseYEntry.setDouble(pose.getY());
+    robotPoseHeadingEntry.setDouble(pose.getRotation().getDegrees());
   }
 
   @Override
@@ -287,6 +298,19 @@ public class SwerveSubsystem extends SubsystemBase
   {
     // Create a path following command using AutoBuilder. This will also trigger event markers.
     return new PathPlannerAuto(pathName);
+  }
+
+
+  public Command driveToPoseWhenTagSeen(Pose2d targetPose, String limelightName, int[] requiredTagIds,
+                                         double tagAcquireTimeoutSeconds, double driveTimeoutSeconds)
+  {
+    Command waitForTag = Commands.waitUntil(() -> hasAnyLimelightTargetFromList(limelightName, requiredTagIds))
+                                 .withTimeout(tagAcquireTimeoutSeconds);
+
+    return Commands.sequence(
+        waitForTag,
+        driveToPose(targetPose).withTimeout(driveTimeoutSeconds),
+        Commands.runOnce(this::lock));
   }
 
   /**
@@ -458,9 +482,9 @@ public class SwerveSubsystem extends SubsystemBase
     });
   }
 
-  private boolean isAllowedAimTagId(int tagId)
+  private boolean isTagInList(int tagId, int[] allowedIds)
   {
-    for (int allowedId : Constants.VisionConstants.ALLOWED_AIM_TAG_IDS)
+    for (int allowedId : allowedIds)
     {
       if (allowedId == tagId)
       {
@@ -468,6 +492,31 @@ public class SwerveSubsystem extends SubsystemBase
       }
     }
     return false;
+  }
+
+  private boolean isAllowedAimTagId(int tagId)
+  {
+    return isTagInList(tagId, Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
+  }
+
+  public boolean hasAnyLimelightTargetFromList(String limelightName, int[] allowedTagIds)
+  {
+    if (!LimelightHelpers.getTV(limelightName))
+    {
+      return false;
+    }
+
+    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    for (LimelightHelpers.RawFiducial fiducial : fiducials)
+    {
+      if (isTagInList(fiducial.id, allowedTagIds))
+      {
+        return true;
+      }
+    }
+
+    int primaryId = (int) Math.round(LimelightHelpers.getFiducialID(limelightName));
+    return isTagInList(primaryId, allowedTagIds);
   }
 
   private boolean isDirectAimTagId(int tagId)

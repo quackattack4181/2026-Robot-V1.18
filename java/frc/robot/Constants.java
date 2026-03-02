@@ -7,6 +7,8 @@ package frc.robot;
 import com.pathplanner.lib.config.PIDConstants;
 
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import swervelib.math.Matter;
@@ -64,6 +66,7 @@ public final class Constants
     public static final int[] DIRECT_AIM_TAG_IDS = {26, 10};
     public static final int[] CENTER_AIM_TAG_IDS = {8, 5, 11, 2, 18, 27, 21, 24};
     public static final int[] ALLOWED_AIM_TAG_IDS = {26, 10, 8, 5, 11, 2, 18, 27, 21, 24};
+    public static final int[] CLIMBER_APPROVED_TAG_IDS = {14, 15, 16, 4, 5, 6};
     // Linear calibration for Limelight distance inches: calibrated = raw * scale + offset.
     // Defaults fit two tape-measure points: (raw 68.0 -> true 68.0), (raw 103.5 -> true 105.0).
     public static final double LIMELIGHT_DISTANCE_SCALE = 1.0422535;
@@ -73,6 +76,22 @@ public final class Constants
   {
 
 
+  }
+
+  public static final class ClimbSetupConstants
+  {
+    // Update these three values after parking robot where you want to start climb.
+    public static final double TARGET_X_METERS = 1.50;
+    public static final double TARGET_Y_METERS = 6.20;
+    public static final double TARGET_HEADING_DEGREES = 180.0;
+
+    public static final Pose2d TARGET_POSE = new Pose2d(
+        TARGET_X_METERS,
+        TARGET_Y_METERS,
+        Rotation2d.fromDegrees(TARGET_HEADING_DEGREES));
+
+    public static final double APPROACH_TIMEOUT_SECONDS = 4.0;
+    public static final double TAG_ACQUIRE_TIMEOUT_SECONDS = 2.0;
   }
 
   public static final class ShooterConstants
