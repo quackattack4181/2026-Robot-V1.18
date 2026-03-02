@@ -53,8 +53,10 @@ public class RobotContainer {
 
   private static final String AUTO_SELECTED_KEY = "Auto Selected";
   private static final String AUTO_OPTIONS_KEY = "Auto Options";
+  private static final String AUTO_SELECTED_INDEX_KEY = "Auto Selected Index";
   private final NetworkTableEntry autoSelectedEntry;
   private final NetworkTableEntry autoOptionsEntry;
+  private final NetworkTableEntry autoSelectedIndexEntry;
   private final Map<String, Command> autoOptions = new LinkedHashMap<>();
   private final SendableChooser<String> autoChooser = new SendableChooser<>();
 
@@ -110,6 +112,7 @@ public class RobotContainer {
     NetworkTable elasticTable = NetworkTableInstance.getDefault().getTable("Elastic");
     autoSelectedEntry = elasticTable.getEntry(AUTO_SELECTED_KEY);
     autoOptionsEntry = elasticTable.getEntry(AUTO_OPTIONS_KEY);
+    autoSelectedIndexEntry = elasticTable.getEntry(AUTO_SELECTED_INDEX_KEY);
 
     NamedCommands.registerCommand("runAlignToTag", drivebase.aimAtLimelightTarget(VisionConstants.LIMELIGHT_NAME));
     NamedCommands.registerCommand("runIntakePivotOut", intakePivot.moveToOutAngleCommand());
@@ -323,22 +326,25 @@ public class RobotContainer {
       }
     }
 
-    autoOptionsEntry.setStringArray(autoOptions.keySet().toArray(new String[0]));
+    String[] optionNames = autoOptions.keySet().toArray(new String[0]);
+    autoOptionsEntry.setStringArray(optionNames);
     if (autoOptions.isEmpty()) {
       autoSelectedEntry.setString("");
+      autoSelectedIndexEntry.setInteger(-1);
       SmartDashboard.putData("Auto Chooser", autoChooser);
       return;
     }
 
-    String defaultSelection = autoOptions.keySet().iterator().next();
+    String defaultSelection = optionNames[0];
     autoChooser.setDefaultOption(defaultSelection, defaultSelection);
-    for (String option : autoOptions.keySet()) {
+    for (String option : optionNames) {
       if (!option.equals(defaultSelection)) {
         autoChooser.addOption(option, option);
       }
     }
     SmartDashboard.putData("Auto Chooser", autoChooser);
     autoSelectedEntry.setString(defaultSelection);
+    autoSelectedIndexEntry.setInteger(0);
   }
 
 
@@ -354,9 +360,29 @@ public class RobotContainer {
       return null;
     }
 
-    String fallbackAuto = autoOptions.keySet().iterator().next();
+    String[] optionNames = autoOptions.keySet().toArray(new String[0]);
+    String fallbackAuto = optionNames[0];
+
     String chooserSelection = autoChooser.getSelected();
-    String selectedAuto = chooserSelection != null ? chooserSelection : autoSelectedEntry.getString(fallbackAuto);
+    if (chooserSelection != null && autoOptions.containsKey(chooserSelection)) {
+      autoSelectedEntry.setString(chooserSelection);
+      for (int i = 0; i < optionNames.length; i++) {
+        if (optionNames[i].equals(chooserSelection)) {
+          autoSelectedIndexEntry.setInteger(i);
+          break;
+        }
+      }
+      return autoOptions.get(chooserSelection);
+    }
+
+    int selectedIndex = (int) autoSelectedIndexEntry.getInteger(0);
+    if (selectedIndex >= 0 && selectedIndex < optionNames.length) {
+      String selectedByIndex = optionNames[selectedIndex];
+      autoSelectedEntry.setString(selectedByIndex);
+      return autoOptions.get(selectedByIndex);
+    }
+
+    String selectedAuto = autoSelectedEntry.getString(fallbackAuto);
     return autoOptions.getOrDefault(selectedAuto, autoOptions.get(fallbackAuto));
   }
 
