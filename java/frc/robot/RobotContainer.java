@@ -384,6 +384,27 @@ public class RobotContainer {
     String[] optionNames = autoOptions.keySet().toArray(new String[0]);
     String fallbackAuto = optionNames[0];
 
+    // 1) Prefer explicit named selection from Elastic (dropdown/list by names).
+    String selectedByName = autoSelectedEntry.getString("");
+    if (selectedByName != null && autoOptions.containsKey(selectedByName)) {
+      for (int i = 0; i < optionNames.length; i++) {
+        if (optionNames[i].equals(selectedByName)) {
+          autoSelectedIndexEntry.setInteger(i);
+          break;
+        }
+      }
+      return autoOptions.get(selectedByName);
+    }
+
+    // 2) Fallback to numeric index selection.
+    int selectedIndex = (int) autoSelectedIndexEntry.getInteger(0);
+    if (selectedIndex >= 0 && selectedIndex < optionNames.length) {
+      String selectedByIndex = optionNames[selectedIndex];
+      autoSelectedEntry.setString(selectedByIndex);
+      return autoOptions.get(selectedByIndex);
+    }
+
+    // 3) Fallback to chooser selection if available.
     String chooserSelection = autoChooser.getSelected();
     if (chooserSelection != null && autoOptions.containsKey(chooserSelection)) {
       autoSelectedEntry.setString(chooserSelection);
@@ -396,15 +417,9 @@ public class RobotContainer {
       return autoOptions.get(chooserSelection);
     }
 
-    int selectedIndex = (int) autoSelectedIndexEntry.getInteger(0);
-    if (selectedIndex >= 0 && selectedIndex < optionNames.length) {
-      String selectedByIndex = optionNames[selectedIndex];
-      autoSelectedEntry.setString(selectedByIndex);
-      return autoOptions.get(selectedByIndex);
-    }
-
-    String selectedAuto = autoSelectedEntry.getString(fallbackAuto);
-    return autoOptions.getOrDefault(selectedAuto, autoOptions.get(fallbackAuto));
+    autoSelectedEntry.setString(fallbackAuto);
+    autoSelectedIndexEntry.setInteger(0);
+    return autoOptions.get(fallbackAuto);
   }
 
 
