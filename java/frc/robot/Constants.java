@@ -80,14 +80,25 @@ public final class Constants
 
   public static final class ClimbSetupConstants
   {
-    // Update these three values after parking robot where you want to start climb.
-    public static final double TARGET_X_METERS = 1.50;
-    public static final double TARGET_Y_METERS = 6.20;
+    // Update these values after parking robot where you want to start climb.
+    public static final double LEFT_TARGET_X_METERS = 1.50;
+    public static final double LEFT_TARGET_Y_METERS = 6.20;
+
+    // Update these values after parking robot where you want to start climb on the right side.
+    public static final double RIGHT_TARGET_X_METERS = 1.50;
+    public static final double RIGHT_TARGET_Y_METERS = 5.20;
+
+    // Fallback heading if tag alignment capture doesn't complete.
     public static final double TARGET_HEADING_DEGREES = 180.0;
 
-    public static final Pose2d TARGET_POSE = new Pose2d(
-        TARGET_X_METERS,
-        TARGET_Y_METERS,
+    public static final Pose2d LEFT_TARGET_POSE = new Pose2d(
+        LEFT_TARGET_X_METERS,
+        LEFT_TARGET_Y_METERS,
+        Rotation2d.fromDegrees(TARGET_HEADING_DEGREES));
+
+    public static final Pose2d RIGHT_TARGET_POSE = new Pose2d(
+        RIGHT_TARGET_X_METERS,
+        RIGHT_TARGET_Y_METERS,
         Rotation2d.fromDegrees(TARGET_HEADING_DEGREES));
 
     public static final double APPROACH_TIMEOUT_SECONDS = 5.0;

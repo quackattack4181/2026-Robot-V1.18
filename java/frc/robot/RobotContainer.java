@@ -140,7 +140,12 @@ public class RobotContainer {
     NamedCommands.registerCommand("runShooterFor7Sec", createAutoAimAndShootCommand(7.0));
     NamedCommands.registerCommand("runAimAndShootFor7Sec", createAutoAimAndShootCommand(7.0));
     NamedCommands.registerCommand("runPause5", Commands.waitSeconds(5.0));
-    NamedCommands.registerCommand("runDriveToClimbSetup", createAutoDriveToClimbSetupCommand());
+    NamedCommands.registerCommand("runDriveToClimbSetupLeft", createAutoDriveToClimbSetupCommand(
+        ClimbSetupConstants.LEFT_TARGET_POSE));
+    NamedCommands.registerCommand("runDriveToClimbSetupRight", createAutoDriveToClimbSetupCommand(
+        ClimbSetupConstants.RIGHT_TARGET_POSE));
+    NamedCommands.registerCommand("runDriveToClimbSetup", createAutoDriveToClimbSetupCommand(
+        ClimbSetupConstants.LEFT_TARGET_POSE));
 
     // Auto-discover PathPlanner autos/paths from deploy and publish to Elastic.
     loadAutoOptions();
@@ -188,8 +193,9 @@ public class RobotContainer {
             () -> shooter.getTargetPowerForDistanceInches(
                 drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))));
 
-    // Driver one climb setup assist: auto-drive to configured climb pose when approved tags are visible.
-    driverOne.x().whileTrue(createAutoDriveToClimbSetupCommand());
+    // Driver one climb setup assist: hold X for left pose, hold B for right pose.
+    driverOne.x().whileTrue(createAutoDriveToClimbSetupCommand(ClimbSetupConstants.LEFT_TARGET_POSE));
+    driverOne.b().whileTrue(createAutoDriveToClimbSetupCommand(ClimbSetupConstants.RIGHT_TARGET_POSE));
 
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
@@ -226,7 +232,7 @@ public class RobotContainer {
     drivebase.zeroGyro();
   }
 
-  private Command createAutoDriveToClimbSetupCommand() {
+  private Command createAutoDriveToClimbSetupCommand(Pose2d requestedPose) {
     final double[] alignedHeadingDegrees = {ClimbSetupConstants.TARGET_HEADING_DEGREES};
 
     Command waitForClimbTag = Commands.waitUntil(
@@ -242,8 +248,8 @@ public class RobotContainer {
     Command driveToClimbPose = Commands.defer(
         () -> {
           Pose2d climbPose = new Pose2d(
-              ClimbSetupConstants.TARGET_X_METERS,
-              ClimbSetupConstants.TARGET_Y_METERS,
+              requestedPose.getX(),
+              requestedPose.getY(),
               Rotation2d.fromDegrees(alignedHeadingDegrees[0]));
 
           double positionToleranceMeters = edu.wpi.first.math.util.Units
