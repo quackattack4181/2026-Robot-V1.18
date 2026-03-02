@@ -76,6 +76,7 @@ public class SwerveSubsystem extends SubsystemBase
   private final PIDController limelightAimController = new PIDController(Constants.VisionConstants.AIM_KP,
                                                                          Constants.VisionConstants.AIM_KI,
                                                                          Constants.VisionConstants.AIM_KD);
+  private final PIDController headingController = new PIDController(0.02, 0.0, 0.001);
   /**
    * Enable vision odometry updates while driving.
    */
@@ -149,6 +150,8 @@ public class SwerveSubsystem extends SubsystemBase
     }
     setupPathPlanner();
     limelightAimController.setTolerance(Constants.VisionConstants.AIM_TOLERANCE_DEGREES);
+    headingController.enableContinuousInput(-180.0, 180.0);
+    headingController.setTolerance(2.0);
     LimelightHelpers.SetFiducialIDFiltersOverride(Constants.VisionConstants.LIMELIGHT_NAME,
                                                   Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
   }
@@ -164,6 +167,8 @@ public class SwerveSubsystem extends SubsystemBase
     // swerveDrive = new SwerveDrive(driveCfg, controllerCfg, Constants.MAX_SPEED);
     swerveDrive = new SwerveDrive(driveCfg, controllerCfg, Constants.MAX_SPEED, null); // *HERE*
     limelightAimController.setTolerance(Constants.VisionConstants.AIM_TOLERANCE_DEGREES);
+    headingController.enableContinuousInput(-180.0, 180.0);
+    headingController.setTolerance(2.0);
     LimelightHelpers.SetFiducialIDFiltersOverride(Constants.VisionConstants.LIMELIGHT_NAME,
                                                   Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
   }
@@ -497,6 +502,43 @@ public class SwerveSubsystem extends SubsystemBase
   private boolean isAllowedAimTagId(int tagId)
   {
     return isTagInList(tagId, Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
+  }
+
+  public boolean isNearLimelightSnapshot(String limelightName,
+                                        int[] allowedTagIds,
+                                        double targetTx,
+                                        double targetTy,
+                                        double targetTa,
+                                        double txTolerance,
+                                        double tyTolerance,
+                                        double taTolerance)
+  {
+    if (!hasAnyLimelightTargetFromList(limelightName, allowedTagIds))
+    {
+      return false;
+    }
+
+    return Math.abs(LimelightHelpers.getTX(limelightName) - targetTx) <= txTolerance
+           && Math.abs(LimelightHelpers.getTY(limelightName) - targetTy) <= tyTolerance
+           && Math.abs(LimelightHelpers.getTA(limelightName) - targetTa) <= taTolerance;
+  }
+
+  public Command rotateByDegreesCommand(double deltaDegrees, double timeoutSeconds)
+  {
+    return Commands.defer(
+        () -> {
+          double targetHeading = MathUtil.inputModulus(getHeading().getDegrees() + deltaDegrees, -180.0, 180.0);
+          return run(() -> {
+            double omega = headingController.calculate(getHeading().getDegrees(), targetHeading);
+            omega = MathUtil.clamp(omega, -2.5, 2.5);
+            drive(new Translation2d(0.0, 0.0), omega, true);
+          })
+              .until(() -> Math.abs(MathUtil.inputModulus(targetHeading - getHeading().getDegrees(), -180.0, 180.0))
+                  <= 2.0)
+              .withTimeout(timeoutSeconds)
+              .andThen(Commands.runOnce(this::lock));
+        },
+        java.util.Set.of(this));
   }
 
   public boolean hasAnyLimelightTargetFromList(String limelightName, int[] allowedTagIds)

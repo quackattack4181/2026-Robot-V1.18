@@ -144,11 +144,14 @@ public class RobotContainer {
     NamedCommands.registerCommand("runAimAndShootFor7Sec", createAutoAimAndShootCommand(7.0));
     NamedCommands.registerCommand("runPause5", Commands.waitSeconds(5.0));
     NamedCommands.registerCommand("runDriveToClimbSetupLeft", createAutoDriveToClimbSetupCommand(
-        ClimbSetupConstants.LEFT_TARGET_POSE));
+        ClimbSetupConstants.LEFT_TARGET_POSE,
+        true));
     NamedCommands.registerCommand("runDriveToClimbSetupRight", createAutoDriveToClimbSetupCommand(
-        ClimbSetupConstants.RIGHT_TARGET_POSE));
+        ClimbSetupConstants.RIGHT_TARGET_POSE,
+        false));
     NamedCommands.registerCommand("runDriveToClimbSetup", createAutoDriveToClimbSetupCommand(
-        ClimbSetupConstants.LEFT_TARGET_POSE));
+        ClimbSetupConstants.LEFT_TARGET_POSE,
+        true));
 
     // Auto-discover PathPlanner autos/paths from deploy and publish to Elastic.
     loadAutoOptions();
@@ -197,8 +200,8 @@ public class RobotContainer {
                 drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))));
 
     // Driver one climb setup assist: hold X for left pose, hold B for right pose.
-    driverOne.x().whileTrue(createAutoDriveToClimbSetupCommand(ClimbSetupConstants.LEFT_TARGET_POSE));
-    driverOne.b().whileTrue(createAutoDriveToClimbSetupCommand(ClimbSetupConstants.RIGHT_TARGET_POSE));
+    driverOne.x().whileTrue(createAutoDriveToClimbSetupCommand(ClimbSetupConstants.LEFT_TARGET_POSE, true));
+    driverOne.b().whileTrue(createAutoDriveToClimbSetupCommand(ClimbSetupConstants.RIGHT_TARGET_POSE, false));
 
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
@@ -235,7 +238,7 @@ public class RobotContainer {
     drivebase.zeroGyro();
   }
 
-  private Command createAutoDriveToClimbSetupCommand(Pose2d requestedPose) {
+  private Command createAutoDriveToClimbSetupCommand(Pose2d requestedPose, boolean useLimelightSnapshot) {
     final double[] alignedHeadingDegrees = {ClimbSetupConstants.TARGET_HEADING_DEGREES};
 
     Command waitForClimbTag = Commands.waitUntil(
@@ -259,10 +262,28 @@ public class RobotContainer {
               .inchesToMeters(ClimbSetupConstants.POSITION_TOLERANCE_INCHES);
 
           return drivebase.driveToPose(climbPose)
-              .until(() -> drivebase.isNearPose(
-                  climbPose,
-                  positionToleranceMeters,
-                  ClimbSetupConstants.HEADING_TOLERANCE_DEGREES))
+              .until(() -> {
+                boolean nearPose = drivebase.isNearPose(
+                    climbPose,
+                    positionToleranceMeters,
+                    ClimbSetupConstants.HEADING_TOLERANCE_DEGREES);
+
+                if (!useLimelightSnapshot) {
+                  return nearPose;
+                }
+
+                boolean nearLeftSnapshot = drivebase.isNearLimelightSnapshot(
+                    VisionConstants.LIMELIGHT_NAME,
+                    VisionConstants.CLIMBER_APPROVED_TAG_IDS,
+                    ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
+                    ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
+                    ClimbSetupConstants.LEFT_TARGET_TA_PERCENT,
+                    ClimbSetupConstants.LIMELIGHT_TX_TOLERANCE_DEGREES,
+                    ClimbSetupConstants.LIMELIGHT_TY_TOLERANCE_DEGREES,
+                    ClimbSetupConstants.LIMELIGHT_TA_TOLERANCE_PERCENT);
+
+                return nearPose || nearLeftSnapshot;
+              })
               .withTimeout(ClimbSetupConstants.APPROACH_TIMEOUT_SECONDS);
         },
         java.util.Set.of(drivebase));
@@ -384,6 +405,11 @@ public class RobotContainer {
 
     String selectedAuto = autoSelectedEntry.getString(fallbackAuto);
     return autoOptions.getOrDefault(selectedAuto, autoOptions.get(fallbackAuto));
+  }
+
+
+  public Command getAutoFinishSpinCommand() {
+    return drivebase.rotateByDegreesCommand(180.0, OperatorConstants.AUTO_FINISH_SPIN_TIMEOUT_SECONDS);
   }
 
   public void setDriveMode()

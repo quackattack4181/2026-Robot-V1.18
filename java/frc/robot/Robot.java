@@ -122,11 +122,13 @@ public class Robot extends TimedRobot
   @Override
   public void teleopInit()
   {
+    boolean hadAutonomousCommand = m_autonomousCommand != null;
+
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    if (m_autonomousCommand != null)
+    if (hadAutonomousCommand)
     {
       m_autonomousCommand.cancel();
     } else
@@ -135,6 +137,11 @@ public class Robot extends TimedRobot
     }
     m_robotContainer.setDriveMode();
     m_robotContainer.setMotorBrake(true);
+
+    if (hadAutonomousCommand && Constants.OperatorConstants.ENABLE_AUTO_FINISH_180_SPIN)
+    {
+      m_robotContainer.getAutoFinishSpinCommand().schedule();
+    }
   }
 
   /**

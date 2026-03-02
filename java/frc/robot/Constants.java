@@ -54,6 +54,8 @@ public final class Constants
     public static final double TURN_CONSTANT    = 6;
     public static final boolean TWO_CONTROLLER_MODE = true;
     public static final boolean CLIMBER_ENABLED = true;
+    public static final boolean ENABLE_AUTO_FINISH_180_SPIN = false;
+    public static final double AUTO_FINISH_SPIN_TIMEOUT_SECONDS = 1.75;
   }
   public static class VisionConstants
   {
@@ -83,6 +85,10 @@ public final class Constants
     // Update these values after parking robot where you want to start climb.
     public static final double LEFT_TARGET_X_METERS = 1.50;
     public static final double LEFT_TARGET_Y_METERS = 6.20;
+    // Limelight snapshot target for left climb lineup (from dashboard screenshot).
+    public static final double LEFT_TARGET_TX_DEGREES = 5.08;
+    public static final double LEFT_TARGET_TY_DEGREES = -12.53;
+    public static final double LEFT_TARGET_TA_PERCENT = 0.351;
 
     // Update these values after parking robot where you want to start climb on the right side.
     public static final double RIGHT_TARGET_X_METERS = 1.50;
@@ -107,6 +113,9 @@ public final class Constants
     // Final climb dial-in tolerance: start around 6-12 inches and tune from there.
     public static final double POSITION_TOLERANCE_INCHES = 6.0;
     public static final double HEADING_TOLERANCE_DEGREES = 2.0;
+    public static final double LIMELIGHT_TX_TOLERANCE_DEGREES = 1.0;
+    public static final double LIMELIGHT_TY_TOLERANCE_DEGREES = 1.5;
+    public static final double LIMELIGHT_TA_TOLERANCE_PERCENT = 0.10;
   }
 
   public static final class ShooterConstants
