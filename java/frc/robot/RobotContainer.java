@@ -111,6 +111,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("runAlignToTag", drivebase.aimAtLimelightTarget(VisionConstants.LIMELIGHT_NAME));
     NamedCommands.registerCommand("runIntakePivotOut", intakePivot.moveToOutAngleCommand());
     NamedCommands.registerCommand("runIntakePivotIn", intakePivot.moveToInAngleCommand());
+    NamedCommands.registerCommand("runIntakeDown", intakePivot.moveToOutAngleCommand());
+    NamedCommands.registerCommand("runIntakeUp", intakePivot.moveToInAngleCommand());
     // Intentionally no subsystem requirements here so PathPlanner can parallel this with pivot movement.
     NamedCommands.registerCommand("runIntakeWheelsOn", Commands.startEnd(
         () -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER),
@@ -128,9 +130,23 @@ public class RobotContainer {
     NamedCommands.registerCommand("runShooterFor3Sec", shooter.runShooterForSeconds(
         3.0,
         () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runAimAndShootFor3Sec", createAutoAimAndShootCommand(3.0));
+    NamedCommands.registerCommand("runShooterFor4Sec", shooter.runShooterForSeconds(
+        4.0,
+        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runAimAndShootFor4Sec", createAutoAimAndShootCommand(4.0));
     NamedCommands.registerCommand("runShooterFor5Sec", shooter.runShooterForSeconds(
         5.0,
         () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runAimAndShootFor5Sec", createAutoAimAndShootCommand(5.0));
+    NamedCommands.registerCommand("runShooterFor6Sec", shooter.runShooterForSeconds(
+        6.0,
+        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runAimAndShootFor6Sec", createAutoAimAndShootCommand(6.0));
+    NamedCommands.registerCommand("runShooterFor7Sec", shooter.runShooterForSeconds(
+        7.0,
+        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME)));
+    NamedCommands.registerCommand("runAimAndShootFor7Sec", createAutoAimAndShootCommand(7.0));
     NamedCommands.registerCommand("runPause5", Commands.waitSeconds(5.0));
 
     // Auto-discover PathPlanner autos/paths from deploy and publish to Elastic.
@@ -174,7 +190,7 @@ public class RobotContainer {
                  () -> MathUtil.applyDeadband(-driverOne.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
                  VisionConstants.LIMELIGHT_NAME));
 
-    driverOne.rightTrigger(0.5).whileTrue(
+    driverOne.leftTrigger(0.5).and(driverOne.rightTrigger(0.5)).whileTrue(
         shooter.runShooterPower(
             () -> shooter.getTargetPowerForDistanceInches(
                 drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))));
@@ -194,6 +210,8 @@ public class RobotContainer {
 
     // Driver two pivot agitation: hold Back to spin intake wheels and oscillate pivot +/-30 degrees.
     driverTwo.back().whileTrue(intakePivot.runPivotAgitation(30.0, IntakeConstants.WHEEL_POWER));
+    driverTwo.y().whileTrue(intakePivot.holdAtAngleCommand(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE));
+    driverTwo.a().whileTrue(intakePivot.holdAtAngleCommand(IntakeConstants.PIVOT_MAX_INWARD_ANGLE));
 
     if (OperatorConstants.CLIMBER_ENABLED && climber != null) {
       // Climber controls are bumper-only on driver two.
@@ -210,6 +228,18 @@ public class RobotContainer {
 
   public void zeroDriverHeading() {
     drivebase.zeroGyro();
+  }
+
+  private Command createAutoAimAndShootCommand(double seconds) {
+    Command autoAim = drivebase.driveFieldOrientedWithLimelight(
+        () -> 0.0,
+        () -> 0.0,
+        VisionConstants.LIMELIGHT_NAME);
+    Command autoShoot = shooter.runShooterForSeconds(
+        seconds,
+        () -> drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME));
+
+    return Commands.deadline(autoShoot, autoAim);
   }
 
   private void loadAutoOptions() {

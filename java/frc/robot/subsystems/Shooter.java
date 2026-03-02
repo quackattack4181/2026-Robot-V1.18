@@ -120,13 +120,13 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
 
     double distanceFeet = distanceInches / 12.0;
 
-    double x0 = 3.0;
-    double x1 = 6.0;
-    double x2 = 9.0;
+    double x0 = ShooterConstants.SHOOTER_CAL_POINT_NEAR_DISTANCE_FEET;
+    double x1 = ShooterConstants.SHOOTER_CAL_POINT_MID_DISTANCE_FEET;
+    double x2 = ShooterConstants.SHOOTER_CAL_POINT_FAR_DISTANCE_FEET;
 
-    double p0 = ShooterConstants.SHOOTER_POWER_AT_3FT;
-    double p1 = ShooterConstants.SHOOTER_POWER_AT_6FT;
-    double p2 = ShooterConstants.SHOOTER_POWER_AT_9FT;
+    double p0 = ShooterConstants.SHOOTER_CAL_POINT_NEAR_POWER;
+    double p1 = ShooterConstants.SHOOTER_CAL_POINT_MID_POWER;
+    double p2 = ShooterConstants.SHOOTER_CAL_POINT_FAR_POWER;
 
     if (distanceFeet <= x0) {
       return MathUtil.clamp(p0, -1.0, 1.0);

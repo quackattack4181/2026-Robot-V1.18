@@ -126,6 +126,21 @@ public class IntakePivot extends SubsystemBase implements AutoCloseable {
         .andThen(runOnce(this::stop));
   }
 
+  public Command holdAtAngleCommand(double targetDegrees) {
+    return runEnd(
+        () -> {
+          double error = shortestSignedErrorDegrees(getPivotAngleDegrees(), targetDegrees);
+          if (Math.abs(error) <= IntakeConstants.PIVOT_ANGLE_TOLERANCE_DEGREES) {
+            stop();
+            return;
+          }
+
+          double direction = Math.signum(error);
+          setPivotPower(direction * Math.abs(IntakeConstants.PIVOT_POWER));
+        },
+        this::stop);
+  }
+
   public Command stopWheelsCommand() {
     return runOnce(this::stopWheels);
   }
