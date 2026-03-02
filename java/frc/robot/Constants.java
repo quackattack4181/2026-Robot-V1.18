@@ -92,6 +92,7 @@ public final class Constants
 
     public static final double APPROACH_TIMEOUT_SECONDS = 4.0;
     public static final double TAG_ACQUIRE_TIMEOUT_SECONDS = 2.0;
+    public static final double TAG_ALIGN_TIMEOUT_SECONDS = 1.5;
   }
 
   public static final class ShooterConstants

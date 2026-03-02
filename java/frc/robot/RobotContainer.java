@@ -7,6 +7,8 @@ package frc.robot;
 // import edu.wpi.first.cameraserver.CameraServer;
 // import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.networktables.NetworkTable;
@@ -187,7 +189,7 @@ public class RobotContainer {
                 drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))));
 
     // Driver one climb setup assist: auto-drive to configured climb pose when approved tags are visible.
-    driverOne.x().onTrue(createAutoDriveToClimbSetupCommand());
+    driverOne.x().whileTrue(createAutoDriveToClimbSetupCommand());
 
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
@@ -225,12 +227,35 @@ public class RobotContainer {
   }
 
   private Command createAutoDriveToClimbSetupCommand() {
-    return drivebase.driveToPoseWhenTagSeen(
-        ClimbSetupConstants.TARGET_POSE,
-        VisionConstants.LIMELIGHT_NAME,
-        VisionConstants.CLIMBER_APPROVED_TAG_IDS,
-        ClimbSetupConstants.TAG_ACQUIRE_TIMEOUT_SECONDS,
-        ClimbSetupConstants.APPROACH_TIMEOUT_SECONDS);
+    final double[] alignedHeadingDegrees = {ClimbSetupConstants.TARGET_HEADING_DEGREES};
+
+    Command waitForClimbTag = Commands.waitUntil(
+        () -> drivebase.hasAnyLimelightTargetFromList(
+            VisionConstants.LIMELIGHT_NAME,
+            VisionConstants.CLIMBER_APPROVED_TAG_IDS))
+        .withTimeout(ClimbSetupConstants.TAG_ACQUIRE_TIMEOUT_SECONDS);
+
+    Command alignStraightToTag = drivebase.aimAtLimelightTarget(VisionConstants.LIMELIGHT_NAME)
+        .withTimeout(ClimbSetupConstants.TAG_ALIGN_TIMEOUT_SECONDS)
+        .andThen(Commands.runOnce(() -> alignedHeadingDegrees[0] = drivebase.getHeading().getDegrees()));
+
+    Command driveToClimbPose = Commands.defer(
+        () -> {
+          Pose2d climbPose = new Pose2d(
+              ClimbSetupConstants.TARGET_X_METERS,
+              ClimbSetupConstants.TARGET_Y_METERS,
+              Rotation2d.fromDegrees(alignedHeadingDegrees[0]));
+          return drivebase.driveToPose(climbPose)
+              .withTimeout(ClimbSetupConstants.APPROACH_TIMEOUT_SECONDS);
+        },
+        java.util.Set.of(drivebase));
+
+    return Commands.sequence(
+            waitForClimbTag,
+            alignStraightToTag,
+            driveToClimbPose,
+            Commands.runOnce(drivebase::lock))
+        .andThen(Commands.idle(drivebase));
   }
 
   private Command createAutoAimAndShootCommand(double seconds) {
