@@ -561,83 +561,39 @@ public class SwerveSubsystem extends SubsystemBase
     return isTagInList(primaryId, allowedTagIds);
   }
 
-  private boolean isDirectAimTagId(int tagId)
-  {
-    for (int directId : Constants.VisionConstants.DIRECT_AIM_TAG_IDS)
-    {
-      if (directId == tagId)
-      {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean isCenterAimTagId(int tagId)
-  {
-    for (int centerId : Constants.VisionConstants.CENTER_AIM_TAG_IDS)
-    {
-      if (centerId == tagId)
-      {
-        return true;
-      }
-    }
-    return false;
-  }
-
   private boolean hasAllowedLimelightTarget(String limelightName)
   {
-    if (!LimelightHelpers.getTV(limelightName))
-    {
-      return false;
-    }
-
-    int tagId = (int) Math.round(LimelightHelpers.getFiducialID(limelightName));
-    return isAllowedAimTagId(tagId);
+    return hasAnyLimelightTargetFromList(limelightName, Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
   }
 
   private double getAverageTxForAllowedTags(String limelightName)
   {
+    if (!hasAllowedLimelightTarget(limelightName))
+    {
+      return Double.NaN;
+    }
+
     LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
 
-    double centerTxSum = 0.0;
-    int centerCount = 0;
-    double directTxSum = 0.0;
-    int directCount = 0;
+    double txSum = 0.0;
+    int count = 0;
 
     for (LimelightHelpers.RawFiducial fiducial : fiducials)
     {
-      if (isCenterAimTagId(fiducial.id))
+      if (isAllowedAimTagId(fiducial.id))
       {
-        centerTxSum += fiducial.txnc;
-        centerCount++;
-      }
-      else if (isDirectAimTagId(fiducial.id))
-      {
-        directTxSum += fiducial.txnc;
-        directCount++;
+        txSum += fiducial.txnc;
+        count++;
       }
     }
 
-    // If 2+ center tags are visible, aim at the center between them.
-    if (centerCount >= 2)
+    // Aim at the center average of ALL visible approved shooting tags.
+    if (count > 0)
     {
-      return centerTxSum / centerCount;
+      return txSum / count;
     }
 
-    // Otherwise, prioritize aiming directly at tag 26/10 when visible.
-    if (directCount > 0)
-    {
-      return directTxSum / directCount;
-    }
-
-    // With only one center-list tag, still aim directly at that tag.
-    if (centerCount == 1)
-    {
-      return centerTxSum;
-    }
-
-    return hasAllowedLimelightTarget(limelightName) ? LimelightHelpers.getTX(limelightName) : Double.NaN;
+    return LimelightHelpers.getTX(limelightName);
   }
 
   /**

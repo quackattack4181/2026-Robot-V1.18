@@ -65,9 +65,8 @@ public final class Constants
     public static final double AIM_KD = 0.002;
     public static final double AIM_TOLERANCE_DEGREES = 0.5;
     public static final double AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC = 4.0;
-    public static final int[] DIRECT_AIM_TAG_IDS = {26, 10};
-    public static final int[] CENTER_AIM_TAG_IDS = {8, 5, 11, 2, 18, 27, 21, 24};
-    public static final int[] ALLOWED_AIM_TAG_IDS = {26, 10, 8, 5, 11, 2, 18, 27, 21, 24};
+    public static final int[] SHOOTING_AIM_TAG_IDS = {5, 8, 9, 10, 11, 12, 18, 27, 26, 25, 21, 24};
+    public static final int[] ALLOWED_AIM_TAG_IDS = SHOOTING_AIM_TAG_IDS;
     public static final int[] CLIMBER_APPROVED_TAG_IDS = {10, 26};
     // Linear calibration for Limelight distance inches: calibrated = raw * scale + offset.
     // Defaults fit two tape-measure points: (raw 68.0 -> true 68.0), (raw 103.5 -> true 105.0).
