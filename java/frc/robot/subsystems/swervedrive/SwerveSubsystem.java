@@ -444,6 +444,27 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
+   * Drive straight backward in robot-relative X for a fixed distance.
+   *
+   * @param distanceInches distance to back up (inches).
+   * @param speedMetersPerSecond backup speed magnitude (m/s).
+   * @return command that drives backward then stops.
+   */
+  public Command driveBackwardRobotRelativeCommand(double distanceInches, double speedMetersPerSecond)
+  {
+    Pose2d[] startPose = new Pose2d[1];
+    double distanceMeters = Units.inchesToMeters(Math.abs(distanceInches));
+    double backupSpeed = -Math.abs(speedMetersPerSecond);
+
+    return Commands.sequence(
+        Commands.runOnce(() -> startPose[0] = getPose()),
+        Commands.run(() -> drive(new Translation2d(backupSpeed, 0.0), 0.0, false), this)
+                .until(() -> startPose[0] != null
+                    && getPose().getTranslation().getDistance(startPose[0].getTranslation()) >= distanceMeters))
+                   .finallyDo(() -> drive(new Translation2d(0.0, 0.0), 0.0, false));
+  }
+
+  /**
    * Sets the maximum speed of the swerve drive.
    *
    * @param maximumSpeedInMetersPerSecond the maximum speed to set for the swerve drive in meters per second

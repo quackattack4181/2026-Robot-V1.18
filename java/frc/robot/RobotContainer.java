@@ -210,6 +210,9 @@ public class RobotContainer {
         VisionConstants.CLIMBER_APPROVED_TAG_IDS,
         ClimbSetupConstants.TAG_LINEUP_TARGET_DISTANCE_FEET,
         ClimbSetupConstants.RIGHT_TARGET_LATERAL_OFFSET_INCHES));
+    driverOne.y().onTrue(drivebase.driveBackwardRobotRelativeCommand(
+        ClimbSetupConstants.DRIVER_BACKUP_DISTANCE_INCHES,
+        ClimbSetupConstants.DRIVER_BACKUP_SPEED_MPS));
 
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
