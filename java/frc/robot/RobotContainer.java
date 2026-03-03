@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -214,10 +215,12 @@ public class RobotContainer {
         VisionConstants.CLIMBER_APPROVED_TAG_IDS,
         ClimbSetupConstants.TAG_LINEUP_TARGET_DISTANCE_FEET,
         ClimbSetupConstants.RIGHT_TARGET_LATERAL_OFFSET_INCHES));
-    driverOne.y().onTrue(drivebase.driveBackwardRobotRelativeCommand(
-        ClimbSetupConstants.DRIVER_BACKUP_DISTANCE_INCHES,
-        ClimbSetupConstants.DRIVER_BACKUP_SPEED_MPS,
-        ClimbSetupConstants.DRIVER_BACKUP_TIMEOUT_SECONDS));
+    driverOne.y().onTrue(Commands.defer(
+        () -> drivebase.driveBackwardRobotRelativeCommand(
+            ClimbSetupConstants.DRIVER_BACKUP_DISTANCE_INCHES,
+            ClimbSetupConstants.DRIVER_BACKUP_SPEED_MPS,
+            ClimbSetupConstants.DRIVER_BACKUP_TIMEOUT_SECONDS),
+        Set.of(drivebase)));
 
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
