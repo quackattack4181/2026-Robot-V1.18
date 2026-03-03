@@ -6,6 +6,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -15,6 +17,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final SparkFlex leftClimberMotor;
   private final SparkFlex rightClimberMotor;
   private final DutyCycleEncoder absoluteEncoder;
+  private final NetworkTableEntry climberAngleDegreesEntry =
+      NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Climber Angle (deg)");
 
   public Climber() {
     leftClimberMotor = new SparkFlex(ClimberConstants.LEFT_CLIMBER_MOTOR_ID, MotorType.kBrushless);
@@ -83,6 +87,12 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   public Command runClimberPower(double power) {
     return runEnd(() -> setClimberPower(power), this::stop);
+  }
+
+  @Override
+  public void periodic() {
+    // Publish adjusted climber angle (includes configured offset and optional inversion).
+    climberAngleDegreesEntry.setDouble(getClimberAngleDegrees());
   }
 
   @Override
