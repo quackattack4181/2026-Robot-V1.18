@@ -193,7 +193,7 @@ public final class Constants
     public static final boolean CLIMBER_LIMITS_ENABLED = true;
     // Manual climber soft limits after offset/inversion are applied.
     public static final double FORWARD_MAX_ANGLE_DEGREES = 20.0;
-    public static final double BACKWARD_MAX_ANGLE_DEGREES = -60.0;
+    public static final double BACKWARD_MAX_ANGLE_DEGREES = -120.0;
   }
 
   public static final class IntakeConstants
