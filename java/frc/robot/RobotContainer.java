@@ -205,11 +205,11 @@ public class RobotContainer {
         VisionConstants.LIMELIGHT_NAME,
         VisionConstants.CLIMBER_APPROVED_TAG_IDS,
         ClimbSetupConstants.TAG_LINEUP_TARGET_DISTANCE_FEET));
-    driverOne.b().whileTrue(createAutoDriveToClimbSetupCommand(
-        ClimbSetupConstants.RIGHT_TARGET_POSE,
-        ClimbSetupConstants.RIGHT_TARGET_TX_DEGREES,
-        ClimbSetupConstants.RIGHT_TARGET_TY_DEGREES,
-        ClimbSetupConstants.RIGHT_TARGET_TA_PERCENT));
+    driverOne.b().whileTrue(drivebase.lineUpToTagAtDistance(
+        VisionConstants.LIMELIGHT_NAME,
+        VisionConstants.CLIMBER_APPROVED_TAG_IDS,
+        ClimbSetupConstants.TAG_LINEUP_TARGET_DISTANCE_FEET,
+        ClimbSetupConstants.RIGHT_TARGET_LATERAL_OFFSET_INCHES));
 
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));

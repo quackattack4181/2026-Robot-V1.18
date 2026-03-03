@@ -619,9 +619,15 @@ public class SwerveSubsystem extends SubsystemBase
     return count > 0 ? txSum / count : LimelightHelpers.getTX(limelightName);
   }
 
-  public Command lineUpToTagAtDistance(String limelightName, int[] allowedTagIds, double targetDistanceFeet)
+  public Command lineUpToTagAtDistance(String limelightName,
+                                       int[] allowedTagIds,
+                                       double targetDistanceFeet,
+                                       double lateralOffsetInches)
   {
     double targetDistanceMeters = Units.feetToMeters(targetDistanceFeet);
+    double targetTxDegrees = -Units.radiansToDegrees(
+        Math.atan2(Units.inchesToMeters(lateralOffsetInches), targetDistanceMeters));
+
     return run(() -> {
       double forwardMps = 0.0;
       double strafeMps = 0.0;
@@ -648,9 +654,18 @@ public class SwerveSubsystem extends SubsystemBase
         }
 
         // Keep the robot pointed straight and recenter on tag by strafing, not rotating.
-        strafeMps = MathUtil.clamp(-tx * Constants.ClimbSetupConstants.TAG_LINEUP_STRAFE_KP,
-                                   -Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS,
-                                   Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS);
+        double txError = tx - targetTxDegrees;
+        if (Math.abs(txError) > Constants.ClimbSetupConstants.LIMELIGHT_TX_TOLERANCE_DEGREES)
+        {
+          strafeMps = MathUtil.clamp(-txError * Constants.ClimbSetupConstants.TAG_LINEUP_STRAFE_KP,
+                                     -Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS,
+                                     Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS);
+
+          if (Math.abs(strafeMps) < Constants.ClimbSetupConstants.TAG_LINEUP_MIN_STRAFE_MPS)
+          {
+            strafeMps = Math.copySign(Constants.ClimbSetupConstants.TAG_LINEUP_MIN_STRAFE_MPS, strafeMps);
+          }
+        }
 
         double distanceMeters = getLimelightTargetDistanceMeters(limelightName);
         if (Double.isFinite(distanceMeters))
@@ -670,6 +685,11 @@ public class SwerveSubsystem extends SubsystemBase
 
       drive(new Translation2d(forwardMps, strafeMps), omega, false);
     }).finallyDo(() -> drive(new Translation2d(0.0, 0.0), 0.0, false));
+  }
+
+  public Command lineUpToTagAtDistance(String limelightName, int[] allowedTagIds, double targetDistanceFeet)
+  {
+    return lineUpToTagAtDistance(limelightName, allowedTagIds, targetDistanceFeet, 0.0);
   }
 
   /**

@@ -128,6 +128,7 @@ public final class Constants
     public static final double TAG_LINEUP_MAX_FORWARD_MPS = 1.2;
     public static final double TAG_LINEUP_STRAFE_KP = 0.09;
     public static final double TAG_LINEUP_MAX_STRAFE_MPS = 1.0;
+    public static final double TAG_LINEUP_MIN_STRAFE_MPS = 0.15;
   }
 
   public static final class ShooterConstants
