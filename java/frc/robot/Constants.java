@@ -190,9 +190,12 @@ public final class Constants
     public static final int WHEEL_SPARKFLEX_CURRENT_LIMIT_AMPS = 80;
     public static final double PIVOT_POWER = 0.30;
     public static final boolean PIVOT_LIMITS_ENABLED = true;
+    // Absolute encoder offset in degrees. Set this so your desired "zero" angle reads 0.0.
     public static final double PIVOT_ABSOLUTE_ENCODER_OFFSET_DEGREES = 0.0;
-    public static final double PIVOT_MAX_INWARD_ANGLE = -45.0; // -70.0;
-    public static final double PIVOT_MAX_OUTWARD_ANGLE = 85.0; // 100.0;
+    // Manual soft limits (degrees) after applying offset.
+    // Typical setup requested: inward = 0.0, outward = positive value.
+    public static final double PIVOT_MAX_INWARD_ANGLE = 0.0;
+    public static final double PIVOT_MAX_OUTWARD_ANGLE = 90.0;
     public static final double PIVOT_ANGLE_TOLERANCE_DEGREES = 2.0;
     public static final double WHEEL_POWER = 0.80;
   }

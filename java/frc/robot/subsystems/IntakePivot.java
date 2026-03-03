@@ -47,10 +47,22 @@ public class IntakePivot extends SubsystemBase implements AutoCloseable {
     double requestedPower = power;
     if (IntakeConstants.PIVOT_LIMITS_ENABLED) {
       double angle = getPivotAngleDegrees();
-      if (requestedPower > 0.0 && angle >= IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE) {
+      double inwardLimit = Math.min(IntakeConstants.PIVOT_MAX_INWARD_ANGLE, IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE);
+      double outwardLimit = Math.max(IntakeConstants.PIVOT_MAX_INWARD_ANGLE, IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE);
+
+      // Normal stop at configured limits.
+      if (requestedPower > 0.0 && angle >= outwardLimit) {
         requestedPower = 0.0;
       }
-      if (requestedPower < 0.0 && angle <= IntakeConstants.PIVOT_MAX_INWARD_ANGLE) {
+      if (requestedPower < 0.0 && angle <= inwardLimit) {
+        requestedPower = 0.0;
+      }
+
+      // If we are outside limits due to wrap/offset changes, only allow motion back into range.
+      if (angle < inwardLimit && requestedPower < 0.0) {
+        requestedPower = 0.0;
+      }
+      if (angle > outwardLimit && requestedPower > 0.0) {
         requestedPower = 0.0;
       }
     }
