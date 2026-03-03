@@ -192,6 +192,8 @@ public final class Constants
     public static final boolean PIVOT_LIMITS_ENABLED = true;
     // Absolute encoder offset in degrees. Set this so your desired "zero" angle reads 0.0.
     public static final double PIVOT_ABSOLUTE_ENCODER_OFFSET_DEGREES = 0.0;
+    // If true, flip encoder sign so angle increases/decreases opposite direction.
+    public static final boolean PIVOT_ENCODER_DIRECTION_INVERTED = false;
     // Manual soft limits (degrees) after applying offset.
     // Typical setup requested: inward = 0.0, outward = positive value.
     public static final double PIVOT_MAX_INWARD_ANGLE = 0.0;
