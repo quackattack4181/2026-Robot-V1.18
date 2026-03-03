@@ -450,7 +450,9 @@ public class SwerveSubsystem extends SubsystemBase
    * @param speedMetersPerSecond backup speed magnitude (m/s).
    * @return command that drives backward then stops.
    */
-  public Command driveBackwardRobotRelativeCommand(double distanceInches, double speedMetersPerSecond)
+  public Command driveBackwardRobotRelativeCommand(double distanceInches,
+                                                   double speedMetersPerSecond,
+                                                   double timeoutSeconds)
   {
     Pose2d[] startPose = new Pose2d[1];
     double distanceMeters = Units.inchesToMeters(Math.abs(distanceInches));
@@ -461,7 +463,13 @@ public class SwerveSubsystem extends SubsystemBase
         Commands.run(() -> drive(new Translation2d(backupSpeed, 0.0), 0.0, false), this)
                 .until(() -> startPose[0] != null
                     && getPose().getTranslation().getDistance(startPose[0].getTranslation()) >= distanceMeters))
+                   .withTimeout(timeoutSeconds)
                    .finallyDo(() -> drive(new Translation2d(0.0, 0.0), 0.0, false));
+  }
+
+  public Command driveBackwardRobotRelativeCommand(double distanceInches, double speedMetersPerSecond)
+  {
+    return driveBackwardRobotRelativeCommand(distanceInches, speedMetersPerSecond, 2.0);
   }
 
   /**
