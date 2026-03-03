@@ -648,7 +648,7 @@ public class SwerveSubsystem extends SubsystemBase
         }
 
         // Keep the robot pointed straight and recenter on tag by strafing, not rotating.
-        strafeMps = MathUtil.clamp(tx * Constants.ClimbSetupConstants.TAG_LINEUP_STRAFE_KP,
+        strafeMps = MathUtil.clamp(-tx * Constants.ClimbSetupConstants.TAG_LINEUP_STRAFE_KP,
                                    -Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS,
                                    Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS);
 
