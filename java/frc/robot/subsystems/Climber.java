@@ -38,12 +38,28 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     double clampedPower = Math.max(-ClimberConstants.MAX_ALLOWED_POWER,
         Math.min(ClimberConstants.MAX_ALLOWED_POWER, power));
 
-    double currentAngle = getClimberAngleDegrees();
-    if (clampedPower > 0.0 && currentAngle >= ClimberConstants.MAX_FORWARD_ANGLE_DEGREES) {
-      clampedPower = 0.0;
-    }
-    if (clampedPower < 0.0 && currentAngle <= ClimberConstants.MAX_BACKWARD_ANGLE_DEGREES) {
-      clampedPower = 0.0;
+    if (ClimberConstants.CLIMBER_LIMITS_ENABLED) {
+      double currentAngle = getClimberAngleDegrees();
+      double backwardLimit = Math.min(ClimberConstants.BACKWARD_MAX_ANGLE_DEGREES,
+          ClimberConstants.FORWARD_MAX_ANGLE_DEGREES);
+      double forwardLimit = Math.max(ClimberConstants.BACKWARD_MAX_ANGLE_DEGREES,
+          ClimberConstants.FORWARD_MAX_ANGLE_DEGREES);
+
+      // Normal stop at configured limits.
+      if (clampedPower > 0.0 && currentAngle >= forwardLimit) {
+        clampedPower = 0.0;
+      }
+      if (clampedPower < 0.0 && currentAngle <= backwardLimit) {
+        clampedPower = 0.0;
+      }
+
+      // If outside limits, only allow motion back into range.
+      if (currentAngle < backwardLimit && clampedPower < 0.0) {
+        clampedPower = 0.0;
+      }
+      if (currentAngle > forwardLimit && clampedPower > 0.0) {
+        clampedPower = 0.0;
+      }
     }
 
     leftClimberMotor.set(clampedPower);
@@ -56,7 +72,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   public double getClimberAngleDegrees() {
     double absoluteDegrees = absoluteEncoder.get() * 360.0;
-    return wrapToSignedDegrees(absoluteDegrees - ClimberConstants.CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES);
+    double angle = wrapToSignedDegrees(absoluteDegrees - ClimberConstants.CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES);
+    return ClimberConstants.CLIMBER_ENCODER_DIRECTION_INVERTED ? -angle : angle;
   }
 
   public void stop() {
@@ -65,7 +82,7 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   }
 
   public Command runClimberPower(double power) {
-    return startEnd(() -> setClimberPower(power), this::stop);
+    return runEnd(() -> setClimberPower(power), this::stop);
   }
 
   @Override
