@@ -185,7 +185,7 @@ public final class Constants
     public static final boolean RIGHT_CLIMBER_INVERTED = true;
     public static final int SPARKFLEX_CURRENT_LIMIT_AMPS = 80;
     public static final double MAX_ALLOWED_POWER = 1.00;
-    public static final double CLIMBER_POWER = 0.85;
+    public static final double CLIMBER_POWER = 0.95;
     // Absolute encoder offset in degrees. Set this so your chosen climber zero reads 0.0.
     public static final double CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES = -147.8;
     // If true, flip encoder sign so climber angle increases/decreases opposite direction.
