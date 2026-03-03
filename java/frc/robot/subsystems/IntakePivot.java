@@ -91,6 +91,24 @@ public class IntakePivot extends SubsystemBase implements AutoCloseable {
     return wrapToSignedDegrees(targetDegrees - currentDegrees);
   }
 
+  private Command moveToAngleCommand(double targetDegrees) {
+    return runEnd(
+        () -> {
+          double error = shortestSignedErrorDegrees(getPivotAngleDegrees(), targetDegrees);
+          if (Math.abs(error) <= IntakeConstants.PIVOT_ANGLE_TOLERANCE_DEGREES) {
+            stop();
+            return;
+          }
+
+          double direction = Math.signum(error);
+          setPivotPower(direction * Math.abs(IntakeConstants.PIVOT_POWER));
+        },
+        this::stop)
+        .until(() -> isNearAngle(targetDegrees))
+        .withTimeout(2.5)
+        .andThen(runOnce(this::stop));
+  }
+
   public Command runPivotClockwiseToAngle(double targetDegrees) {
     return runEnd(
         () -> {
@@ -125,17 +143,11 @@ public class IntakePivot extends SubsystemBase implements AutoCloseable {
   }
 
   public Command moveToOutAngleCommand() {
-    return runPivotCounterClockwiseToAngle(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE)
-        .until(() -> isNearAngle(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE))
-        .withTimeout(2.5)
-        .andThen(runOnce(this::stop));
+    return moveToAngleCommand(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE);
   }
 
   public Command moveToInAngleCommand() {
-    return runPivotClockwiseToAngle(IntakeConstants.PIVOT_MAX_INWARD_ANGLE)
-        .until(() -> isNearAngle(IntakeConstants.PIVOT_MAX_INWARD_ANGLE))
-        .withTimeout(2.5)
-        .andThen(runOnce(this::stop));
+    return moveToAngleCommand(IntakeConstants.PIVOT_MAX_INWARD_ANGLE);
   }
 
   public Command holdAtAngleCommand(double targetDegrees) {
