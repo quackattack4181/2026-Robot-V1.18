@@ -181,19 +181,19 @@ public final class Constants
     public static final int LEFT_CLIMBER_MOTOR_ID = 40;
     public static final int RIGHT_CLIMBER_MOTOR_ID = 41;
     public static final int ABSOLUTE_ENCODER_CHANNEL = 8;
-    public static final boolean LEFT_CLIMBER_INVERTED = true;
-    public static final boolean RIGHT_CLIMBER_INVERTED = false;
+    public static final boolean LEFT_CLIMBER_INVERTED = false;
+    public static final boolean RIGHT_CLIMBER_INVERTED = true;
     public static final int SPARKFLEX_CURRENT_LIMIT_AMPS = 80;
     public static final double MAX_ALLOWED_POWER = 1.00;
     public static final double CLIMBER_POWER = 0.85;
     // Absolute encoder offset in degrees. Set this so your chosen climber zero reads 0.0.
-    public static final double CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES = 0.0;
+    public static final double CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES = -147.8;
     // If true, flip encoder sign so climber angle increases/decreases opposite direction.
     public static final boolean CLIMBER_ENCODER_DIRECTION_INVERTED = false;
     public static final boolean CLIMBER_LIMITS_ENABLED = true;
     // Manual climber soft limits after offset/inversion are applied.
     public static final double FORWARD_MAX_ANGLE_DEGREES = 20.0;
-    public static final double BACKWARD_MAX_ANGLE_DEGREES = -20.0;
+    public static final double BACKWARD_MAX_ANGLE_DEGREES = -60.0;
   }
 
   public static final class IntakeConstants
