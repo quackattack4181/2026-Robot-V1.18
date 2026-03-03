@@ -200,12 +200,11 @@ public class RobotContainer {
                     drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))),
             intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
 
-    // Driver one climb setup assist: hold X for left pose, hold B for right pose.
-    driverOne.x().whileTrue(createAutoDriveToClimbSetupCommand(
-        ClimbSetupConstants.LEFT_TARGET_POSE,
-        ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
-        ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
-        ClimbSetupConstants.LEFT_TARGET_TA_PERCENT));
+    // Driver one climb lineup test: hold X to center on climb tag and hold ~9ft distance.
+    driverOne.x().whileTrue(drivebase.lineUpToTagAtDistance(
+        VisionConstants.LIMELIGHT_NAME,
+        VisionConstants.CLIMBER_APPROVED_TAG_IDS,
+        ClimbSetupConstants.TAG_LINEUP_TARGET_DISTANCE_FEET));
     driverOne.b().whileTrue(createAutoDriveToClimbSetupCommand(
         ClimbSetupConstants.RIGHT_TARGET_POSE,
         ClimbSetupConstants.RIGHT_TARGET_TX_DEGREES,

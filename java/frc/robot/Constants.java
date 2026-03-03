@@ -121,6 +121,11 @@ public final class Constants
     public static final double LIMELIGHT_TX_TOLERANCE_DEGREES = 1.0;
     public static final double LIMELIGHT_TY_TOLERANCE_DEGREES = 1.5;
     public static final double LIMELIGHT_TA_TOLERANCE_PERCENT = 0.10;
+    // Driver test-mode lineup behavior for X button.
+    public static final double TAG_LINEUP_TARGET_DISTANCE_FEET = 9.0;
+    public static final double TAG_LINEUP_DISTANCE_TOLERANCE_INCHES = 3.0;
+    public static final double TAG_LINEUP_DISTANCE_KP = 1.25;
+    public static final double TAG_LINEUP_MAX_FORWARD_MPS = 1.2;
   }
 
   public static final class ShooterConstants

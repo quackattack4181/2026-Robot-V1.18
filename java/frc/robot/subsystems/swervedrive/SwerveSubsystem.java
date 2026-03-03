@@ -596,6 +596,63 @@ public class SwerveSubsystem extends SubsystemBase
     return LimelightHelpers.getTX(limelightName);
   }
 
+  private double getAverageTxForTagList(String limelightName, int[] allowedTagIds)
+  {
+    if (!hasAnyLimelightTargetFromList(limelightName, allowedTagIds))
+    {
+      return Double.NaN;
+    }
+
+    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    double txSum = 0.0;
+    int count = 0;
+
+    for (LimelightHelpers.RawFiducial fiducial : fiducials)
+    {
+      if (isTagInList(fiducial.id, allowedTagIds))
+      {
+        txSum += fiducial.txnc;
+        count++;
+      }
+    }
+
+    return count > 0 ? txSum / count : LimelightHelpers.getTX(limelightName);
+  }
+
+  public Command lineUpToTagAtDistance(String limelightName, int[] allowedTagIds, double targetDistanceFeet)
+  {
+    double targetDistanceMeters = Units.feetToMeters(targetDistanceFeet);
+    return run(() -> {
+      double forwardMps = 0.0;
+      double omega = 0.0;
+
+      if (hasAnyLimelightTargetFromList(limelightName, allowedTagIds))
+      {
+        double tx = getAverageTxForTagList(limelightName, allowedTagIds);
+        if (!Double.isFinite(tx))
+        {
+          tx = 0.0;
+        }
+
+        omega = limelightAimController.calculate(tx, 0.0);
+        omega = MathUtil.clamp(omega,
+                               -Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC,
+                               Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC);
+
+        double distanceMeters = getLimelightTargetDistanceMeters(limelightName);
+        if (Double.isFinite(distanceMeters))
+        {
+          double distanceErrorMeters = distanceMeters - targetDistanceMeters;
+          forwardMps = MathUtil.clamp(distanceErrorMeters * Constants.ClimbSetupConstants.TAG_LINEUP_DISTANCE_KP,
+                                      -Constants.ClimbSetupConstants.TAG_LINEUP_MAX_FORWARD_MPS,
+                                      Constants.ClimbSetupConstants.TAG_LINEUP_MAX_FORWARD_MPS);
+        }
+      }
+
+      drive(new Translation2d(forwardMps, 0.0), omega, false);
+    }).finallyDo(() -> drive(new Translation2d(0.0, 0.0), 0.0, false));
+  }
+
   /**
    * Command to drive field-relative while using Limelight AprilTag targeting to control rotation.
    *
