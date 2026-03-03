@@ -74,7 +74,7 @@ public class IntakePivot extends SubsystemBase implements AutoCloseable {
   }
 
   public Command runPivotPower(double power) {
-    return startEnd(() -> setPivotPower(power), this::stop);
+    return runEnd(() -> setPivotPower(power), this::stop);
   }
 
   private double wrapToSignedDegrees(double degrees) {
