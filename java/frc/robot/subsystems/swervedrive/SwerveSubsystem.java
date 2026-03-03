@@ -624,9 +624,22 @@ public class SwerveSubsystem extends SubsystemBase
     double targetDistanceMeters = Units.feetToMeters(targetDistanceFeet);
     return run(() -> {
       double forwardMps = 0.0;
-      double omega = 0.0;
+      double strafeMps = 0.0;
 
-      if (hasAnyLimelightTargetFromList(limelightName, allowedTagIds))
+      double omega = headingController.calculate(getHeading().getDegrees(),
+                                                 Constants.ClimbSetupConstants.TARGET_HEADING_DEGREES);
+      omega = MathUtil.clamp(omega,
+                             -Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC,
+                             Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC);
+
+      double headingError = Math.abs(MathUtil.inputModulus(
+          Constants.ClimbSetupConstants.TARGET_HEADING_DEGREES - getHeading().getDegrees(),
+          -180.0,
+          180.0));
+
+      // Rotate to the requested heading first, then do translation-only tag centering.
+      if (headingError <= Constants.ClimbSetupConstants.HEADING_TOLERANCE_DEGREES
+          && hasAnyLimelightTargetFromList(limelightName, allowedTagIds))
       {
         double tx = getAverageTxForTagList(limelightName, allowedTagIds);
         if (!Double.isFinite(tx))
@@ -634,22 +647,28 @@ public class SwerveSubsystem extends SubsystemBase
           tx = 0.0;
         }
 
-        omega = limelightAimController.calculate(tx, 0.0);
-        omega = MathUtil.clamp(omega,
-                               -Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC,
-                               Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC);
+        // Keep the robot pointed straight and recenter on tag by strafing, not rotating.
+        strafeMps = MathUtil.clamp(tx * Constants.ClimbSetupConstants.TAG_LINEUP_STRAFE_KP,
+                                   -Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS,
+                                   Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS);
 
         double distanceMeters = getLimelightTargetDistanceMeters(limelightName);
         if (Double.isFinite(distanceMeters))
         {
           double distanceErrorMeters = distanceMeters - targetDistanceMeters;
-          forwardMps = MathUtil.clamp(distanceErrorMeters * Constants.ClimbSetupConstants.TAG_LINEUP_DISTANCE_KP,
-                                      -Constants.ClimbSetupConstants.TAG_LINEUP_MAX_FORWARD_MPS,
-                                      Constants.ClimbSetupConstants.TAG_LINEUP_MAX_FORWARD_MPS);
+          double distanceToleranceMeters = Units.inchesToMeters(
+              Constants.ClimbSetupConstants.TAG_LINEUP_DISTANCE_TOLERANCE_INCHES);
+
+          if (Math.abs(distanceErrorMeters) > distanceToleranceMeters)
+          {
+            forwardMps = MathUtil.clamp(distanceErrorMeters * Constants.ClimbSetupConstants.TAG_LINEUP_DISTANCE_KP,
+                                        -Constants.ClimbSetupConstants.TAG_LINEUP_MAX_FORWARD_MPS,
+                                        Constants.ClimbSetupConstants.TAG_LINEUP_MAX_FORWARD_MPS);
+          }
         }
       }
 
-      drive(new Translation2d(forwardMps, 0.0), omega, false);
+      drive(new Translation2d(forwardMps, strafeMps), omega, false);
     }).finallyDo(() -> drive(new Translation2d(0.0, 0.0), 0.0, false));
   }
 

@@ -126,6 +126,8 @@ public final class Constants
     public static final double TAG_LINEUP_DISTANCE_TOLERANCE_INCHES = 3.0;
     public static final double TAG_LINEUP_DISTANCE_KP = 1.25;
     public static final double TAG_LINEUP_MAX_FORWARD_MPS = 1.2;
+    public static final double TAG_LINEUP_STRAFE_KP = 0.09;
+    public static final double TAG_LINEUP_MAX_STRAFE_MPS = 1.0;
   }
 
   public static final class ShooterConstants
