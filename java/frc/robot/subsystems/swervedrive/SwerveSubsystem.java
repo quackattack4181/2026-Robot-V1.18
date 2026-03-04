@@ -649,7 +649,6 @@ public class SwerveSubsystem extends SubsystemBase
 
       double omega = headingController.calculate(getHeading().getDegrees(),
                                                  Constants.ClimbSetupConstants.TARGET_HEADING_DEGREES);
-      omega *= Constants.ClimbSetupConstants.TAG_LINEUP_HEADING_POWER_SCALE;
       omega = MathUtil.clamp(omega,
                              -Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC,
                              Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC);

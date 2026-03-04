@@ -119,7 +119,6 @@ public final class Constants
     public static final double POSITION_TOLERANCE_INCHES = 6.0;
     public static final double HEADING_TOLERANCE_DEGREES = 2.0;
     public static final double TAG_LINEUP_HEADING_TOLERANCE_DEGREES = 1.0;
-    public static final double TAG_LINEUP_HEADING_POWER_SCALE = 1.25;
     public static final double LIMELIGHT_TX_TOLERANCE_DEGREES = 1.0;
     public static final double LIMELIGHT_TY_TOLERANCE_DEGREES = 1.5;
     public static final double LIMELIGHT_TA_TOLERANCE_PERCENT = 0.10;
