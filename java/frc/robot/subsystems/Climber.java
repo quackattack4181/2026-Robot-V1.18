@@ -113,6 +113,10 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     return moveToAngleCommand(ClimberConstants.CLIMBER_LEVEL_1_POSITION_DEGREES);
   }
 
+  public Command moveToLevel2PositionCommand() {
+    return moveToAngleCommand(ClimberConstants.CLIMBER_LEVEL_2_POSITION_DEGREES);
+  }
+
   @Override
   public void periodic() {
     // Publish adjusted climber angle (includes configured offset and optional inversion).

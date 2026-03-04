@@ -193,14 +193,15 @@ public final class Constants
     public static final double CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES = 19.12;
     // If true, flip encoder sign so climber angle increases/decreases opposite direction.
     public static final boolean CLIMBER_ENCODER_DIRECTION_INVERTED = true;
-    public static final boolean CLIMBER_LIMITS_ENABLED = false;
+    public static final boolean CLIMBER_LIMITS_ENABLED = true;
     // Manual climber soft limits after offset/inversion are applied.
-    public static final double FORWARD_MAX_ANGLE_DEGREES = 0.0;
-    public static final double BACKWARD_MAX_ANGLE_DEGREES = -125.0;
+    public static final double FORWARD_MAX_ANGLE_DEGREES = 10.0;
+    public static final double BACKWARD_MAX_ANGLE_DEGREES = -135.0;
 
     // Preset climber positions in offset-adjusted degrees.
-    public static final double CLIMBER_DOWN_POSITION_DEGREES = 0.0;
-    public static final double CLIMBER_LEVEL_1_POSITION_DEGREES = -60.0;
+    public static final double CLIMBER_DOWN_POSITION_DEGREES = -125.0;
+    public static final double CLIMBER_LEVEL_1_POSITION_DEGREES = 0.0;
+    public static final double CLIMBER_LEVEL_2_POSITION_DEGREES = CLIMBER_LEVEL_1_POSITION_DEGREES;
     public static final double CLIMBER_POSITION_TOLERANCE_DEGREES = 1.0;
     public static final double CLIMBER_POSITION_KP = 0.03;
   }

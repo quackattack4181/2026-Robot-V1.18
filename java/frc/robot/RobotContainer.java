@@ -155,6 +155,7 @@ public class RobotContainer {
     if (OperatorConstants.CLIMBER_ENABLED && climber != null) {
       NamedCommands.registerCommand("runClimberDownPosition", climber.moveToDownPositionCommand());
       NamedCommands.registerCommand("runClimberLevel1Position", climber.moveToLevel1PositionCommand());
+      NamedCommands.registerCommand("runClimberLevel2Position", climber.moveToLevel2PositionCommand());
     }
     NamedCommands.registerCommand("runBackup6Inches", Commands.defer(
         () -> drivebase.driveBackwardRobotRelativeCommand(
@@ -242,15 +243,16 @@ public class RobotContainer {
 
     // Driver two pivot agitation: hold Back to spin intake wheels and oscillate pivot +/-30 degrees.
     driverTwo.back().whileTrue(intakePivot.runPivotAgitation(30.0, IntakeConstants.WHEEL_POWER));
-    driverTwo.y().whileTrue(intakePivot.holdAtAngleCommand(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE));
+    driverTwo.start().whileTrue(intakePivot.holdAtAngleCommand(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE));
     driverTwo.a().whileTrue(intakePivot.holdAtAngleCommand(IntakeConstants.PIVOT_MAX_INWARD_ANGLE));
 
     if (OperatorConstants.CLIMBER_ENABLED && climber != null) {
-      // Climber controls on driver two: bumpers for manual, B/X for preset positions.
+      // Climber controls on driver two: bumpers for manual, B/X/Y for preset positions.
       driverTwo.leftBumper().whileTrue(climber.runClimberPower(ClimberConstants.CLIMBER_POWER));
       driverTwo.rightBumper().whileTrue(climber.runClimberPower(-ClimberConstants.CLIMBER_POWER));
-      driverTwo.b().whileTrue(climber.moveToDownPositionCommand());
-      driverTwo.x().whileTrue(climber.moveToLevel1PositionCommand());
+      driverTwo.b().onTrue(climber.moveToDownPositionCommand());
+      driverTwo.x().onTrue(climber.moveToLevel1PositionCommand());
+      driverTwo.y().onTrue(climber.moveToLevel2PositionCommand());
     }
 
 
