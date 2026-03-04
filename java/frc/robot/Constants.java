@@ -114,20 +114,20 @@ public final class Constants
 
     public static final double APPROACH_TIMEOUT_SECONDS = 5.0;
     public static final double TAG_ACQUIRE_TIMEOUT_SECONDS = 2.0;
-    public static final double TAG_ALIGN_TIMEOUT_SECONDS = 1.5;
+    public static final double TAG_ALIGN_TIMEOUT_SECONDS = 3;
     // Final climb dial-in tolerance: start around 6-12 inches and tune from there.
-    public static final double POSITION_TOLERANCE_INCHES = 6.0;
-    public static final double HEADING_TOLERANCE_DEGREES = 2.0;
-    public static final double TAG_LINEUP_HEADING_TOLERANCE_DEGREES = 1.0;
+    public static final double POSITION_TOLERANCE_INCHES = 1.0;
+    public static final double HEADING_TOLERANCE_DEGREES = 5.0;
+    public static final double TAG_LINEUP_HEADING_TOLERANCE_DEGREES = 5.0;
     public static final double LIMELIGHT_TX_TOLERANCE_DEGREES = 1.0;
     public static final double LIMELIGHT_TY_TOLERANCE_DEGREES = 1.5;
     public static final double LIMELIGHT_TA_TOLERANCE_PERCENT = 0.10;
     // Driver test-mode lineup behavior for X/B climb buttons.
-    public static final double TAG_LINEUP_X_TARGET_DISTANCE_FEET = 7.0;
+    public static final double TAG_LINEUP_X_TARGET_DISTANCE_FEET = 7.75;
     public static final double TAG_LINEUP_X_LATERAL_OFFSET_INCHES = -12.0;
     public static final double TAG_LINEUP_B_LATERAL_OFFSET_INCHES =
         TAG_LINEUP_X_LATERAL_OFFSET_INCHES + RIGHT_TARGET_LATERAL_OFFSET_INCHES;
-    public static final double TAG_LINEUP_DISTANCE_TOLERANCE_INCHES = 3.0;
+    public static final double TAG_LINEUP_DISTANCE_TOLERANCE_INCHES = 1.0;
     public static final double TAG_LINEUP_DISTANCE_KP = 1.25;
     public static final double TAG_LINEUP_MAX_FORWARD_MPS = 1.2;
     public static final double TAG_LINEUP_STRAFE_KP = 0.09;
@@ -190,13 +190,19 @@ public final class Constants
     public static final double MAX_ALLOWED_POWER = 1.00;
     public static final double CLIMBER_POWER = 0.95;
     // Absolute encoder offset in degrees. Set this so your chosen climber zero reads 0.0.
-    public static final double CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES = -147.8;
+    public static final double CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES = 19.12;
     // If true, flip encoder sign so climber angle increases/decreases opposite direction.
-    public static final boolean CLIMBER_ENCODER_DIRECTION_INVERTED = false;
-    public static final boolean CLIMBER_LIMITS_ENABLED = true;
+    public static final boolean CLIMBER_ENCODER_DIRECTION_INVERTED = true;
+    public static final boolean CLIMBER_LIMITS_ENABLED = false;
     // Manual climber soft limits after offset/inversion are applied.
-    public static final double FORWARD_MAX_ANGLE_DEGREES = 20.0;
-    public static final double BACKWARD_MAX_ANGLE_DEGREES = -120.0;
+    public static final double FORWARD_MAX_ANGLE_DEGREES = 0.0;
+    public static final double BACKWARD_MAX_ANGLE_DEGREES = -125.0;
+
+    // Preset climber positions in offset-adjusted degrees.
+    public static final double CLIMBER_DOWN_POSITION_DEGREES = 0.0;
+    public static final double CLIMBER_LEVEL_1_POSITION_DEGREES = -60.0;
+    public static final double CLIMBER_POSITION_TOLERANCE_DEGREES = 1.0;
+    public static final double CLIMBER_POSITION_KP = 0.03;
   }
 
   public static final class IntakeConstants

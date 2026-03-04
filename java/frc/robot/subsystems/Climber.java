@@ -8,6 +8,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -87,6 +88,29 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   public Command runClimberPower(double power) {
     return runEnd(() -> setClimberPower(power), this::stop);
+  }
+
+  public Command moveToAngleCommand(double targetAngleDegrees) {
+    return run(() -> {
+      double errorDegrees = targetAngleDegrees - getClimberAngleDegrees();
+      if (Math.abs(errorDegrees) <= ClimberConstants.CLIMBER_POSITION_TOLERANCE_DEGREES) {
+        stop();
+        return;
+      }
+
+      double power = MathUtil.clamp(errorDegrees * ClimberConstants.CLIMBER_POSITION_KP,
+                                    -ClimberConstants.CLIMBER_POWER,
+                                    ClimberConstants.CLIMBER_POWER);
+      setClimberPower(power);
+    }).finallyDo(this::stop);
+  }
+
+  public Command moveToDownPositionCommand() {
+    return moveToAngleCommand(ClimberConstants.CLIMBER_DOWN_POSITION_DEGREES);
+  }
+
+  public Command moveToLevel1PositionCommand() {
+    return moveToAngleCommand(ClimberConstants.CLIMBER_LEVEL_1_POSITION_DEGREES);
   }
 
   @Override

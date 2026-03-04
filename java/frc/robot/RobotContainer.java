@@ -152,6 +152,10 @@ public class RobotContainer {
         ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
         ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
         ClimbSetupConstants.LEFT_TARGET_TA_PERCENT));
+    if (OperatorConstants.CLIMBER_ENABLED && climber != null) {
+      NamedCommands.registerCommand("runClimberDownPosition", climber.moveToDownPositionCommand());
+      NamedCommands.registerCommand("runClimberLevel1Position", climber.moveToLevel1PositionCommand());
+    }
     NamedCommands.registerCommand("runBackup6Inches", Commands.defer(
         () -> drivebase.driveBackwardRobotRelativeCommand(
             ClimbSetupConstants.DRIVER_BACKUP_SPEED_MPS,
@@ -242,9 +246,11 @@ public class RobotContainer {
     driverTwo.a().whileTrue(intakePivot.holdAtAngleCommand(IntakeConstants.PIVOT_MAX_INWARD_ANGLE));
 
     if (OperatorConstants.CLIMBER_ENABLED && climber != null) {
-      // Climber controls are bumper-only on driver two.
+      // Climber controls on driver two: bumpers for manual, B/X for preset positions.
       driverTwo.leftBumper().whileTrue(climber.runClimberPower(ClimberConstants.CLIMBER_POWER));
       driverTwo.rightBumper().whileTrue(climber.runClimberPower(-ClimberConstants.CLIMBER_POWER));
+      driverTwo.b().whileTrue(climber.moveToDownPositionCommand());
+      driverTwo.x().whileTrue(climber.moveToLevel1PositionCommand());
     }
 
 
