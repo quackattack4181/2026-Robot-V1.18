@@ -201,7 +201,7 @@ public final class Constants
     // Preset climber positions in offset-adjusted degrees.
     public static final double CLIMBER_DOWN_POSITION_DEGREES = -125.0;
     public static final double CLIMBER_LEVEL_1_POSITION_DEGREES = 0.0;
-    public static final double CLIMBER_LEVEL_2_POSITION_DEGREES = CLIMBER_LEVEL_1_POSITION_DEGREES;
+    public static final double CLIMBER_LEVEL_2_POSITION_DEGREES = -27.8;
     public static final double CLIMBER_POSITION_TOLERANCE_DEGREES = 1.0;
     public static final double CLIMBER_POSITION_KP = 0.03;
   }
