@@ -649,6 +649,7 @@ public class SwerveSubsystem extends SubsystemBase
 
       double omega = headingController.calculate(getHeading().getDegrees(),
                                                  Constants.ClimbSetupConstants.TARGET_HEADING_DEGREES);
+      omega *= Constants.ClimbSetupConstants.TAG_LINEUP_HEADING_POWER_SCALE;
       omega = MathUtil.clamp(omega,
                              -Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC,
                              Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC);
@@ -659,7 +660,7 @@ public class SwerveSubsystem extends SubsystemBase
           180.0));
 
       // Rotate to the requested heading first, then do translation-only tag centering.
-      if (headingError <= Constants.ClimbSetupConstants.HEADING_TOLERANCE_DEGREES
+      if (headingError <= Constants.ClimbSetupConstants.TAG_LINEUP_HEADING_TOLERANCE_DEGREES
           && hasAnyLimelightTargetFromList(limelightName, allowedTagIds))
       {
         double tx = getAverageTxForTagList(limelightName, allowedTagIds);
