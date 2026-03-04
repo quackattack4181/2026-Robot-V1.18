@@ -444,38 +444,18 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
-   * Drive straight backward in robot-relative X for a fixed distance.
+   * Drive straight backward in robot-relative X for a fixed duration.
    *
-   * @param distanceInches distance to back up (inches).
    * @param speedMetersPerSecond backup speed magnitude (m/s).
+   * @param durationSeconds duration to drive backward (seconds).
    * @return command that drives backward then stops.
    */
-  public Command driveBackwardRobotRelativeCommand(double distanceInches,
-                                                   double speedMetersPerSecond,
-                                                   double timeoutSeconds)
+  public Command driveBackwardRobotRelativeCommand(double speedMetersPerSecond, double durationSeconds)
   {
-    Pose2d[] startPose = new Pose2d[1];
-    double[] startTimeSeconds = new double[1];
-    double distanceMeters = Units.inchesToMeters(Math.abs(distanceInches));
     double backupSpeed = -Math.abs(speedMetersPerSecond);
-
-    return Commands.sequence(
-        Commands.runOnce(() -> {
-          startPose[0] = getPose();
-          startTimeSeconds[0] = Timer.getFPGATimestamp();
-        }),
-        Commands.run(() -> drive(new Translation2d(backupSpeed, 0.0), 0.0, false), this)
-                .until(() -> startPose[0] != null
-                    && getPose().getTranslation().getDistance(startPose[0].getTranslation()) >= distanceMeters
-                    && (Timer.getFPGATimestamp() - startTimeSeconds[0])
-                        >= Constants.ClimbSetupConstants.DRIVER_BACKUP_MIN_RUN_SECONDS))
-                   .withTimeout(timeoutSeconds)
+    return Commands.run(() -> drive(new Translation2d(backupSpeed, 0.0), 0.0, false), this)
+                   .withTimeout(durationSeconds)
                    .finallyDo(() -> drive(new Translation2d(0.0, 0.0), 0.0, false));
-  }
-
-  public Command driveBackwardRobotRelativeCommand(double distanceInches, double speedMetersPerSecond)
-  {
-    return driveBackwardRobotRelativeCommand(distanceInches, speedMetersPerSecond, 2.0);
   }
 
   /**

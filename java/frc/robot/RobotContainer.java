@@ -154,9 +154,8 @@ public class RobotContainer {
         ClimbSetupConstants.LEFT_TARGET_TA_PERCENT));
     NamedCommands.registerCommand("runBackup6Inches", Commands.defer(
         () -> drivebase.driveBackwardRobotRelativeCommand(
-            ClimbSetupConstants.DRIVER_BACKUP_DISTANCE_INCHES,
             ClimbSetupConstants.DRIVER_BACKUP_SPEED_MPS,
-            ClimbSetupConstants.DRIVER_BACKUP_TIMEOUT_SECONDS),
+            ClimbSetupConstants.DRIVER_BACKUP_DURATION_SECONDS),
         Set.of(drivebase)));
 
     // Auto-discover PathPlanner autos/paths from deploy and publish to Elastic.
@@ -219,9 +218,8 @@ public class RobotContainer {
         ClimbSetupConstants.RIGHT_TARGET_LATERAL_OFFSET_INCHES));
     driverOne.y().onTrue(Commands.defer(
         () -> drivebase.driveBackwardRobotRelativeCommand(
-            ClimbSetupConstants.DRIVER_BACKUP_DISTANCE_INCHES,
             ClimbSetupConstants.DRIVER_BACKUP_SPEED_MPS,
-            ClimbSetupConstants.DRIVER_BACKUP_TIMEOUT_SECONDS),
+            ClimbSetupConstants.DRIVER_BACKUP_DURATION_SECONDS),
         Set.of(drivebase)));
 
     // Driver one manual gyro zero: current facing becomes forward.
