@@ -210,12 +210,13 @@ public class RobotContainer {
     driverOne.x().whileTrue(drivebase.lineUpToTagAtDistance(
         VisionConstants.LIMELIGHT_NAME,
         VisionConstants.CLIMBER_APPROVED_TAG_IDS,
-        ClimbSetupConstants.TAG_LINEUP_TARGET_DISTANCE_FEET));
+        ClimbSetupConstants.TAG_LINEUP_X_TARGET_DISTANCE_FEET,
+        ClimbSetupConstants.TAG_LINEUP_X_LATERAL_OFFSET_INCHES));
     driverOne.b().whileTrue(drivebase.lineUpToTagAtDistance(
         VisionConstants.LIMELIGHT_NAME,
         VisionConstants.CLIMBER_APPROVED_TAG_IDS,
-        ClimbSetupConstants.TAG_LINEUP_TARGET_DISTANCE_FEET,
-        ClimbSetupConstants.RIGHT_TARGET_LATERAL_OFFSET_INCHES));
+        ClimbSetupConstants.TAG_LINEUP_X_TARGET_DISTANCE_FEET,
+        ClimbSetupConstants.TAG_LINEUP_B_LATERAL_OFFSET_INCHES));
     driverOne.y().onTrue(Commands.defer(
         () -> drivebase.driveBackwardRobotRelativeCommand(
             ClimbSetupConstants.DRIVER_BACKUP_SPEED_MPS,
