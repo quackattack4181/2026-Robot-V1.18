@@ -152,10 +152,12 @@ public class RobotContainer {
         ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
         ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
         ClimbSetupConstants.LEFT_TARGET_TA_PERCENT));
-    NamedCommands.registerCommand("runBackup6Inches", drivebase.driveBackwardRobotRelativeCommand(
-        ClimbSetupConstants.DRIVER_BACKUP_DISTANCE_INCHES,
-        ClimbSetupConstants.DRIVER_BACKUP_SPEED_MPS,
-        ClimbSetupConstants.DRIVER_BACKUP_TIMEOUT_SECONDS));
+    NamedCommands.registerCommand("runBackup6Inches", Commands.defer(
+        () -> drivebase.driveBackwardRobotRelativeCommand(
+            ClimbSetupConstants.DRIVER_BACKUP_DISTANCE_INCHES,
+            ClimbSetupConstants.DRIVER_BACKUP_SPEED_MPS,
+            ClimbSetupConstants.DRIVER_BACKUP_TIMEOUT_SECONDS),
+        Set.of(drivebase)));
 
     // Auto-discover PathPlanner autos/paths from deploy and publish to Elastic.
     loadAutoOptions();

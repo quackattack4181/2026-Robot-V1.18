@@ -130,7 +130,8 @@ public final class Constants
     public static final double TAG_LINEUP_MAX_STRAFE_MPS = 1.0;
     public static final double TAG_LINEUP_MIN_STRAFE_MPS = 0.15;
     public static final double DRIVER_BACKUP_DISTANCE_INCHES = 6.0;
-    public static final double DRIVER_BACKUP_SPEED_MPS = 2.0;
+    public static final double DRIVER_BACKUP_SPEED_MPS = 0.8;
+    public static final double DRIVER_BACKUP_MIN_RUN_SECONDS = 0.20;
     public static final double DRIVER_BACKUP_TIMEOUT_SECONDS = 2.0;
   }
 

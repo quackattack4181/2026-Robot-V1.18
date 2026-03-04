@@ -455,14 +455,20 @@ public class SwerveSubsystem extends SubsystemBase
                                                    double timeoutSeconds)
   {
     Pose2d[] startPose = new Pose2d[1];
+    double[] startTimeSeconds = new double[1];
     double distanceMeters = Units.inchesToMeters(Math.abs(distanceInches));
     double backupSpeed = -Math.abs(speedMetersPerSecond);
 
     return Commands.sequence(
-        Commands.runOnce(() -> startPose[0] = getPose()),
+        Commands.runOnce(() -> {
+          startPose[0] = getPose();
+          startTimeSeconds[0] = Timer.getFPGATimestamp();
+        }),
         Commands.run(() -> drive(new Translation2d(backupSpeed, 0.0), 0.0, false), this)
                 .until(() -> startPose[0] != null
-                    && getPose().getTranslation().getDistance(startPose[0].getTranslation()) >= distanceMeters))
+                    && getPose().getTranslation().getDistance(startPose[0].getTranslation()) >= distanceMeters
+                    && (Timer.getFPGATimestamp() - startTimeSeconds[0])
+                        >= Constants.ClimbSetupConstants.DRIVER_BACKUP_MIN_RUN_SECONDS))
                    .withTimeout(timeoutSeconds)
                    .finallyDo(() -> drive(new Translation2d(0.0, 0.0), 0.0, false));
   }
