@@ -204,7 +204,7 @@ public class RobotContainer {
                  () -> MathUtil.applyDeadband(-driverOne.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
                  VisionConstants.LIMELIGHT_NAME));
 
-    driverOne.leftTrigger(0.5).and(driverOne.rightTrigger(0.5)).whileTrue(
+    driverOne.rightTrigger(0.5).whileTrue(
         Commands.parallel(
             shooter.runShooterPower(
                 () -> shooter.getTargetPowerForDistanceInches(
