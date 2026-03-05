@@ -142,17 +142,17 @@ public class RobotContainer {
         ClimbSetupConstants.LEFT_TARGET_POSE,
         ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
         ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
-        ClimbSetupConstants.LEFT_TARGET_TA_PERCENT));
+        ClimbSetupConstants.LEFT_TARGET_TA_PERCENT).withTimeout(3.0));
     NamedCommands.registerCommand("runDriveToClimbSetupRight", createAutoDriveToClimbSetupCommand(
         ClimbSetupConstants.RIGHT_TARGET_POSE,
         ClimbSetupConstants.RIGHT_TARGET_TX_DEGREES,
         ClimbSetupConstants.RIGHT_TARGET_TY_DEGREES,
-        ClimbSetupConstants.RIGHT_TARGET_TA_PERCENT));
+        ClimbSetupConstants.RIGHT_TARGET_TA_PERCENT).withTimeout(3.0));
     NamedCommands.registerCommand("runDriveToClimbSetup", createAutoDriveToClimbSetupCommand(
         ClimbSetupConstants.LEFT_TARGET_POSE,
         ClimbSetupConstants.LEFT_TARGET_TX_DEGREES,
         ClimbSetupConstants.LEFT_TARGET_TY_DEGREES,
-        ClimbSetupConstants.LEFT_TARGET_TA_PERCENT));
+        ClimbSetupConstants.LEFT_TARGET_TA_PERCENT).withTimeout(3.0));
     if (OperatorConstants.CLIMBER_ENABLED && climber != null) {
       NamedCommands.registerCommand("runClimberDownPosition", climber.moveToDownPositionCommand());
       NamedCommands.registerCommand("runClimberLevel1Position", climber.moveToLevel1PositionCommand());
