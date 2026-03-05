@@ -211,8 +211,8 @@ public class RobotContainer {
                     drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))),
             intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
 
-    // Driver one alternate shot mode: same as trigger behavior but fixed shooter power.
-    driverOne.leftTrigger(0.5).and(driverOne.rightBumper()).whileTrue(
+    // Driver one alternate shot mode: fixed shooter power on right bumper (no left trigger required).
+    driverOne.rightBumper().whileTrue(
         Commands.parallel(
             shooter.runShooterPower(() -> ShooterConstants.SHOOTER_FIXED_POWER_DRIVER),
             intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
