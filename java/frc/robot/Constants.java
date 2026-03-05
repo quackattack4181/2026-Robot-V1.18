@@ -205,6 +205,7 @@ public final class Constants
     public static final double CLIMBER_LEVEL_2_POSITION_DEGREES = -27.8;
     public static final double CLIMBER_POSITION_TOLERANCE_DEGREES = 1.0;
     public static final double CLIMBER_POSITION_KP = 0.03;
+    public static final double CLIMBER_POSITION_TIMEOUT_SECONDS = 2.5;
   }
 
   public static final class IntakeConstants

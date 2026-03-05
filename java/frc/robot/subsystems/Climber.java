@@ -93,16 +93,15 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   public Command moveToAngleCommand(double targetAngleDegrees) {
     return run(() -> {
       double errorDegrees = targetAngleDegrees - getClimberAngleDegrees();
-      if (Math.abs(errorDegrees) <= ClimberConstants.CLIMBER_POSITION_TOLERANCE_DEGREES) {
-        stop();
-        return;
-      }
-
       double power = MathUtil.clamp(errorDegrees * ClimberConstants.CLIMBER_POSITION_KP,
                                     -ClimberConstants.CLIMBER_POWER,
                                     ClimberConstants.CLIMBER_POWER);
       setClimberPower(power);
-    }).finallyDo(this::stop);
+    })
+        .until(() -> Math.abs(targetAngleDegrees - getClimberAngleDegrees())
+            <= ClimberConstants.CLIMBER_POSITION_TOLERANCE_DEGREES)
+        .withTimeout(ClimberConstants.CLIMBER_POSITION_TIMEOUT_SECONDS)
+        .finallyDo(this::stop);
   }
 
   public Command moveToDownPositionCommand() {
