@@ -341,8 +341,7 @@ public class RobotContainer {
     return Commands.sequence(
             waitForClimbTag,
             rotateForward,
-            driveToClimbPose)
-        .andThen(Commands.idle(drivebase));
+            driveToClimbPose);
   }
 
   private Command createAutoAimAndShootCommand(double seconds) {
