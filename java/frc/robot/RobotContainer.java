@@ -24,6 +24,7 @@ import frc.robot.Constants.ClimbSetupConstants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.IntakePivot;
@@ -214,7 +215,7 @@ public class RobotContainer {
     // Driver one alternate shot mode: fixed shooter power on right bumper (no left trigger required).
     driverOne.rightBumper().whileTrue(
         Commands.parallel(
-            shooter.runShooterPower(() -> ShooterConstants.SHOOTER_FIXED_POWER_DRIVER),
+            shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER),
             intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
 
     // Driver one climb lineup test: hold X to center on climb tag and hold ~9ft distance.
