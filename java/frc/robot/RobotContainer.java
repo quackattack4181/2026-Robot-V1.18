@@ -194,18 +194,29 @@ public class RobotContainer {
 
     CommandXboxController intakeController = OperatorConstants.TWO_CONTROLLER_MODE ? driverTwo : driverOne;
 
-    // Intake wheel controls can be assigned to driver one or two via OperatorConstants.TWO_CONTROLLER_MODE.
-    intakeController.rightTrigger(0.5)
-        .onTrue(Commands.runOnce(() -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER)))
-        .onFalse(Commands.runOnce(intakePivot::stopWheels));
+    // Keep driver-one trigger semantics explicit:
+    // LT = aim only, RT = distance shot, RB = fixed-power shot.
+    final double triggerThreshold = 0.2;
 
-    driverOne.leftTrigger(0.5)
+    // Intake wheel controls can be assigned to driver one or two via OperatorConstants.TWO_CONTROLLER_MODE.
+    // In one-controller mode, avoid overlapping with driver-one RT shooting.
+    if (OperatorConstants.TWO_CONTROLLER_MODE) {
+      intakeController.rightTrigger(triggerThreshold)
+          .onTrue(Commands.runOnce(() -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER)))
+          .onFalse(Commands.runOnce(intakePivot::stopWheels));
+    } else {
+      intakeController.leftBumper()
+          .onTrue(Commands.runOnce(() -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER)))
+          .onFalse(Commands.runOnce(intakePivot::stopWheels));
+    }
+
+    driverOne.leftTrigger(triggerThreshold)
              .whileTrue(drivebase.driveFieldOrientedWithLimelight(
                  () -> MathUtil.applyDeadband(-driverOne.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
                  () -> MathUtil.applyDeadband(-driverOne.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
                  VisionConstants.LIMELIGHT_NAME));
 
-    driverOne.rightTrigger(0.5).whileTrue(
+    driverOne.rightTrigger(triggerThreshold).whileTrue(
         Commands.parallel(
             shooter.runShooterPower(
                 () -> shooter.getTargetPowerForDistanceInches(
