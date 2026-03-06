@@ -176,6 +176,12 @@ public class RobotContainer {
 //        camera.setFPS(25); // Adjust FPS for efficiency
 //    }
 
+  private Command runIntakeWheelsWithoutRequirements(double power) {
+    return Commands.startEnd(
+        () -> intakePivot.setWheelPower(power),
+        intakePivot::stopWheels);
+  }
+
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary predicate, or via the
@@ -196,7 +202,7 @@ public class RobotContainer {
     // LT = aim only, RT = distance shot, RB = fixed-power shot.
     final double triggerThreshold = 0.2;
 
-    // Intake wheel control is driver-two only.
+    // Driver two keeps normal direct intake-wheel control; driver one shooting also spins wheels.
     driverTwo.rightTrigger(triggerThreshold)
         .onTrue(Commands.runOnce(() -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER)))
         .onFalse(Commands.runOnce(intakePivot::stopWheels));
@@ -208,17 +214,23 @@ public class RobotContainer {
                  VisionConstants.LIMELIGHT_NAME));
 
     driverOne.rightTrigger(triggerThreshold).whileTrue(
-        shooter.runShooterPower(
-            () -> shooter.getTargetPowerForDistanceInches(
-                drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))));
+        Commands.parallel(
+            shooter.runShooterPower(
+                () -> shooter.getTargetPowerForDistanceInches(
+                    drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))),
+            runIntakeWheelsWithoutRequirements(IntakeConstants.WHEEL_POWER)));
 
     // Driver one alternate shot mode: fixed shooter power on right bumper (no left trigger required).
     driverOne.rightBumper().whileTrue(
-        shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER));
+        Commands.parallel(
+            shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER),
+            runIntakeWheelsWithoutRequirements(IntakeConstants.WHEEL_POWER)));
 
     // Driver one low-power fixed shot mode on left bumper (no Limelight aim/distance usage).
     driverOne.leftBumper().whileTrue(
-        shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER_LOW));
+        Commands.parallel(
+            shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER_LOW),
+            runIntakeWheelsWithoutRequirements(IntakeConstants.WHEEL_POWER)));
 
     // Driver one climb lineup test: hold X to center on climb tag and hold ~9ft distance.
     driverOne.x().whileTrue(drivebase.lineUpToTagAtDistance(
