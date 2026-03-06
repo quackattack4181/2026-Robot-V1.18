@@ -123,6 +123,7 @@ public final class Constants
     public static final double LIMELIGHT_TY_TOLERANCE_DEGREES = 1.5;
     public static final double LIMELIGHT_TA_TOLERANCE_PERCENT = 0.10;
     // Driver test-mode lineup behavior for X/B climb buttons.
+    // X/B test-lineup target distance from tag.
     public static final double TAG_LINEUP_X_TARGET_DISTANCE_FEET = 7.75;
     public static final double TAG_LINEUP_X_LATERAL_OFFSET_INCHES = -12.0;
     public static final double TAG_LINEUP_B_LATERAL_OFFSET_INCHES =
@@ -142,7 +143,7 @@ public final class Constants
     public static final int SHOOTER_INTAKE_MOTOR_ID = 20;
     public static final int MIDDLE_SHOOTER_MOTOR_ID = 21;
 
-    public static final boolean SHOOTER_INTAKE_INVERTED = true;
+    public static final boolean SHOOTER_INTAKE_INVERTED = false;
     public static final boolean MIDDLE_SHOOTER_INVERTED = true;
 
     public static final int CURRENT_LIMIT_AMPS = 40;
@@ -155,6 +156,7 @@ public final class Constants
     public static final double SHOOTER_CAL_POINT_FAR_DISTANCE_FEET = 8.34;
     public static final double SHOOTER_CAL_POINT_FAR_POWER = 0.525;
     public static final double SHOOTER_POWER_NO_TAG_DEFAULT = 0.50;
+    // Fixed shooter power modes for driver bumpers (independent of Limelight distance).
     public static final double SHOOTER_FIXED_POWER_DRIVER = 0.90;
     public static final double SHOOTER_FIXED_POWER_DRIVER_LOW = 0.50;
     public static final boolean SHOOTER_CALIBRATION_MODE_ENABLED = false;
@@ -162,6 +164,7 @@ public final class Constants
     public static final double SHOOTER_POWER_TOLERANCE = 0.02;
     public static final double SHOOTER_INTAKE_START_DELAY_SECONDS = 1.25;
 
+    // OLD (currently unused): legacy shooter PID/F feedforward placeholders.
     public static final double SHOOTER_KP = 0.00003;
     public static final double SHOOTER_KI = 0.0;
     public static final double SHOOTER_KD = 0.0001;
@@ -174,6 +177,7 @@ public final class Constants
     public static final boolean AGITATOR_ENABLED = true;
     public static final double AGITATOR_POWER = 1.0;
 
+    // OLD (currently unused): legacy intake PID/F placeholders for shooter feed motor.
     public static final double SHOOTER_INTAKE_KP = 1.0;
     public static final double SHOOTER_INTAKE_KI = 0.0;
     public static final double SHOOTER_INTAKE_KD = 0.0;
@@ -192,6 +196,7 @@ public final class Constants
     public static final double MAX_ALLOWED_POWER = 1.00;
     public static final double CLIMBER_POWER = 0.95;
     // Absolute encoder offset in degrees. Set this so your chosen climber zero reads 0.0.
+    // Current tuned offset. OLD previous tuned value kept for reference after // .
     public static final double CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES = -47.0;// 19.12;
     // If true, flip encoder sign so climber angle increases/decreases opposite direction.
     public static final boolean CLIMBER_ENCODER_DIRECTION_INVERTED = true;
