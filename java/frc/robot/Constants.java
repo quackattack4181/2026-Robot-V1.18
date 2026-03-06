@@ -149,9 +149,9 @@ public final class Constants
     public static final int SPARKFLEX_CURRENT_LIMIT_AMPS = 80;
     public static final double SHOOTER_INTAKE_POWER = 0.99;
     public static final double SHOOTER_CAL_POINT_NEAR_DISTANCE_FEET = 6.15;
-    public static final double SHOOTER_CAL_POINT_NEAR_POWER = 0.465;
+    public static final double SHOOTER_CAL_POINT_NEAR_POWER = 0.475;
     public static final double SHOOTER_CAL_POINT_MID_DISTANCE_FEET = 7.75;
-    public static final double SHOOTER_CAL_POINT_MID_POWER = 0.485;
+    public static final double SHOOTER_CAL_POINT_MID_POWER = 0.495;
     public static final double SHOOTER_CAL_POINT_FAR_DISTANCE_FEET = 8.34;
     public static final double SHOOTER_CAL_POINT_FAR_POWER = 0.525;
     public static final double SHOOTER_POWER_NO_TAG_DEFAULT = 0.50;
@@ -191,10 +191,10 @@ public final class Constants
     public static final double MAX_ALLOWED_POWER = 1.00;
     public static final double CLIMBER_POWER = 0.95;
     // Absolute encoder offset in degrees. Set this so your chosen climber zero reads 0.0.
-    public static final double CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES = 19.12;
+    public static final double CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES = -47.0;// 19.12;
     // If true, flip encoder sign so climber angle increases/decreases opposite direction.
     public static final boolean CLIMBER_ENCODER_DIRECTION_INVERTED = true;
-    public static final boolean CLIMBER_LIMITS_ENABLED = true;
+    public static final boolean CLIMBER_LIMITS_ENABLED = true;                               // Climber Limits
     // Manual climber soft limits after offset/inversion are applied.
     public static final double FORWARD_MAX_ANGLE_DEGREES = 10.0;
     public static final double BACKWARD_MAX_ANGLE_DEGREES = -135.0;
@@ -202,7 +202,7 @@ public final class Constants
     // Preset climber positions in offset-adjusted degrees.
     public static final double CLIMBER_DOWN_POSITION_DEGREES = -125.0;
     public static final double CLIMBER_LEVEL_1_POSITION_DEGREES = 0.0;
-    public static final double CLIMBER_LEVEL_2_POSITION_DEGREES = -27.8;
+    public static final double CLIMBER_LEVEL_2_POSITION_DEGREES = -27.8; 
     public static final double CLIMBER_POSITION_TOLERANCE_DEGREES = 1.0;
     public static final double CLIMBER_POSITION_KP = 0.03;
     public static final double CLIMBER_POSITION_TIMEOUT_SECONDS = 2.5;
@@ -227,6 +227,6 @@ public final class Constants
     public static final double PIVOT_MAX_INWARD_ANGLE = 0.0;
     public static final double PIVOT_MAX_OUTWARD_ANGLE = 90.0;
     public static final double PIVOT_ANGLE_TOLERANCE_DEGREES = 0.5;
-    public static final double WHEEL_POWER = 0.80;
+    public static final double WHEEL_POWER = 0.99;
   }
 }

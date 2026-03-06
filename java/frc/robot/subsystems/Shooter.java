@@ -71,7 +71,10 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   }
 
   public void setShooterPower(double power) {
-    currentShooterPower = MathUtil.clamp(power, -1.0, 1.0);
+    double requestedPower = Double.isFinite(power)
+        ? power
+        : ShooterConstants.SHOOTER_POWER_NO_TAG_DEFAULT;
+    currentShooterPower = MathUtil.clamp(requestedPower, -1.0, 1.0);
     middleShooterMotor.set(currentShooterPower);
 
     if (Math.abs(currentShooterPower) > 1e-3) {
