@@ -156,6 +156,7 @@ public final class Constants
     public static final double SHOOTER_CAL_POINT_FAR_POWER = 0.525;
     public static final double SHOOTER_POWER_NO_TAG_DEFAULT = 0.50;
     public static final double SHOOTER_FIXED_POWER_DRIVER = 0.90;
+    public static final double SHOOTER_FIXED_POWER_DRIVER_LOW = 0.50;
     public static final boolean SHOOTER_CALIBRATION_MODE_ENABLED = false;
     public static final double SHOOTER_CALIBRATION_DEFAULT_POWER = 0.40;
     public static final double SHOOTER_POWER_TOLERANCE = 0.02;

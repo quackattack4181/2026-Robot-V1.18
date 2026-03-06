@@ -229,6 +229,12 @@ public class RobotContainer {
             shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER),
             intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
 
+    // Driver one low-power fixed shot mode on left bumper (no Limelight aim/distance usage).
+    driverOne.leftBumper().whileTrue(
+        Commands.parallel(
+            shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER_LOW),
+            intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
+
     // Driver one climb lineup test: hold X to center on climb tag and hold ~9ft distance.
     driverOne.x().whileTrue(drivebase.lineUpToTagAtDistance(
         VisionConstants.LIMELIGHT_NAME,
