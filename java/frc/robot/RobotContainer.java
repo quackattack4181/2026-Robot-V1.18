@@ -192,23 +192,14 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(!RobotBase.isSimulation() ? driveFieldOrientedDirectAngle : driveFieldOrientedDirectAngleSim);
 
-    CommandXboxController intakeController = OperatorConstants.TWO_CONTROLLER_MODE ? driverTwo : driverOne;
-
     // Keep driver-one trigger semantics explicit:
     // LT = aim only, RT = distance shot, RB = fixed-power shot.
     final double triggerThreshold = 0.2;
 
-    // Intake wheel controls can be assigned to driver one or two via OperatorConstants.TWO_CONTROLLER_MODE.
-    // In one-controller mode, avoid overlapping with driver-one RT shooting.
-    if (OperatorConstants.TWO_CONTROLLER_MODE) {
-      intakeController.rightTrigger(triggerThreshold)
-          .onTrue(Commands.runOnce(() -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER)))
-          .onFalse(Commands.runOnce(intakePivot::stopWheels));
-    } else {
-      intakeController.leftBumper()
-          .onTrue(Commands.runOnce(() -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER)))
-          .onFalse(Commands.runOnce(intakePivot::stopWheels));
-    }
+    // Intake wheel control is driver-two only.
+    driverTwo.rightTrigger(triggerThreshold)
+        .onTrue(Commands.runOnce(() -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER)))
+        .onFalse(Commands.runOnce(intakePivot::stopWheels));
 
     driverOne.leftTrigger(triggerThreshold)
              .whileTrue(drivebase.driveFieldOrientedWithLimelight(
@@ -217,23 +208,17 @@ public class RobotContainer {
                  VisionConstants.LIMELIGHT_NAME));
 
     driverOne.rightTrigger(triggerThreshold).whileTrue(
-        Commands.parallel(
-            shooter.runShooterPower(
-                () -> shooter.getTargetPowerForDistanceInches(
-                    drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))),
-            intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
+        shooter.runShooterPower(
+            () -> shooter.getTargetPowerForDistanceInches(
+                drivebase.getLimelightTargetDistanceInches(VisionConstants.LIMELIGHT_NAME))));
 
     // Driver one alternate shot mode: fixed shooter power on right bumper (no left trigger required).
     driverOne.rightBumper().whileTrue(
-        Commands.parallel(
-            shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER),
-            intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
+        shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER));
 
     // Driver one low-power fixed shot mode on left bumper (no Limelight aim/distance usage).
     driverOne.leftBumper().whileTrue(
-        Commands.parallel(
-            shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER_LOW),
-            intakePivot.runWheelsPower(IntakeConstants.WHEEL_POWER)));
+        shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER_LOW));
 
     // Driver one climb lineup test: hold X to center on climb tag and hold ~9ft distance.
     driverOne.x().whileTrue(drivebase.lineUpToTagAtDistance(
@@ -260,9 +245,9 @@ public class RobotContainer {
     // Pivot manual control moved from POV to intake controller left stick Y.
     // Forward stick (negative Y) behaves like previous POV up.
     // Backward stick (positive Y) behaves like previous POV down.
-    new Trigger(() -> intakeController.getLeftY() < -0.5)
+    new Trigger(() -> driverTwo.getLeftY() < -0.5)
         .whileTrue(intakePivot.runPivotPower(IntakeConstants.PIVOT_POWER));
-    new Trigger(() -> intakeController.getLeftY() > 0.5)
+    new Trigger(() -> driverTwo.getLeftY() > 0.5)
         .whileTrue(intakePivot.runPivotPower(-IntakeConstants.PIVOT_POWER));
 
     // Driver two pivot agitation: hold Back to spin intake wheels and oscillate pivot +/-30 degrees.
