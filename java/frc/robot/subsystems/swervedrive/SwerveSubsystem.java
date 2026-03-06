@@ -57,6 +57,7 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 public class SwerveSubsystem extends SubsystemBase
 {
+  private static final LimelightHelpers.RawFiducial[] EMPTY_FIDUCIALS = new LimelightHelpers.RawFiducial[0];
 
   /**
    * PhotonVision class to keep an accurate odometry.
@@ -519,6 +520,12 @@ public class SwerveSubsystem extends SubsystemBase
     return isTagInList(tagId, Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
   }
 
+  private LimelightHelpers.RawFiducial[] getSafeRawFiducials(String limelightName)
+  {
+    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    return fiducials != null ? fiducials : EMPTY_FIDUCIALS;
+  }
+
   public boolean isNearLimelightSnapshot(String limelightName,
                                         int[] allowedTagIds,
                                         double targetTx,
@@ -563,7 +570,7 @@ public class SwerveSubsystem extends SubsystemBase
       return false;
     }
 
-    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    LimelightHelpers.RawFiducial[] fiducials = getSafeRawFiducials(limelightName);
     for (LimelightHelpers.RawFiducial fiducial : fiducials)
     {
       if (isTagInList(fiducial.id, allowedTagIds))
@@ -588,7 +595,7 @@ public class SwerveSubsystem extends SubsystemBase
       return Double.NaN;
     }
 
-    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    LimelightHelpers.RawFiducial[] fiducials = getSafeRawFiducials(limelightName);
 
     double txSum = 0.0;
     int count = 0;
@@ -618,7 +625,7 @@ public class SwerveSubsystem extends SubsystemBase
       return Double.NaN;
     }
 
-    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    LimelightHelpers.RawFiducial[] fiducials = getSafeRawFiducials(limelightName);
     double txSum = 0.0;
     int count = 0;
 
@@ -958,7 +965,7 @@ public class SwerveSubsystem extends SubsystemBase
       return Double.NaN;
     }
 
-    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    LimelightHelpers.RawFiducial[] fiducials = getSafeRawFiducials(limelightName);
     double distanceSumMeters = 0.0;
     int allowedCount = 0;
 

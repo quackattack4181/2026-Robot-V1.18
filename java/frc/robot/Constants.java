@@ -154,12 +154,12 @@ public final class Constants
     public static final double SHOOTER_CAL_POINT_MID_POWER = 0.485;
     public static final double SHOOTER_CAL_POINT_FAR_DISTANCE_FEET = 8.34;
     public static final double SHOOTER_CAL_POINT_FAR_POWER = 0.525;
-    public static final double SHOOTER_POWER_NO_TAG_DEFAULT = 0.65;
+    public static final double SHOOTER_POWER_NO_TAG_DEFAULT = 0.50;
     public static final double SHOOTER_FIXED_POWER_DRIVER = 0.90;
     public static final boolean SHOOTER_CALIBRATION_MODE_ENABLED = false;
     public static final double SHOOTER_CALIBRATION_DEFAULT_POWER = 0.40;
     public static final double SHOOTER_POWER_TOLERANCE = 0.02;
-    public static final double SHOOTER_INTAKE_START_DELAY_SECONDS = 2;
+    public static final double SHOOTER_INTAKE_START_DELAY_SECONDS = 1.25;
 
     public static final double SHOOTER_KP = 0.00003;
     public static final double SHOOTER_KI = 0.0;
