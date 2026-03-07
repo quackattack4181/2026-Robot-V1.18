@@ -165,7 +165,7 @@ public final class Constants
     public static final boolean SHOOTER_CALIBRATION_MODE_ENABLED = false;
     public static final double SHOOTER_CALIBRATION_DEFAULT_POWER = 0.40;
     public static final double SHOOTER_POWER_TOLERANCE = 0.02;
-    public static final double SHOOTER_INTAKE_START_DELAY_SECONDS = 1.25;
+    public static final double SHOOTER_INTAKE_START_DELAY_SECONDS = 0.10;
 
     // OLD (currently unused): legacy shooter PID/F feedforward placeholders.
     public static final double SHOOTER_KP = 0.00003;
