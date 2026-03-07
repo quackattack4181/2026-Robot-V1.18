@@ -249,8 +249,14 @@ public class RobotContainer {
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
     // Press left bumper to toggle always-on flywheel mode on/off.
-    driverOne.leftBumper().debounce(0.1)
-        .onTrue(Commands.runOnce(() -> shooterAlwaysOnEnabled = !shooterAlwaysOnEnabled));
+    // Keep default ON, but let driver immediately disable/enable at runtime.
+    driverOne.leftBumper()
+        .onTrue(Commands.runOnce(() -> {
+          shooterAlwaysOnEnabled = !shooterAlwaysOnEnabled;
+          if (!shooterAlwaysOnEnabled) {
+            shooter.stop();
+          }
+        }));
 
     shooter.setDefaultCommand(shooter.run(() -> {
       if (shooterAlwaysOnEnabled) {
