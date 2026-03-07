@@ -66,6 +66,7 @@ public class RobotContainer {
   private final Shooter shooter = new Shooter();
   private final IntakePivot intakePivot = new IntakePivot();
   private final Climber climber = OperatorConstants.CLIMBER_ENABLED ? new Climber() : null;
+  private boolean shooterAlwaysOnEnabled = ShooterConstants.SHOOTER_ALWAYS_ON_ENABLED;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController driverOne = new CommandXboxController(0);
@@ -251,6 +252,18 @@ public class RobotContainer {
 
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
+
+    // Press both stick buttons together to toggle always-on flywheel mode.
+    driverOne.leftStick().and(driverOne.rightStick()).debounce(0.1)
+        .onTrue(Commands.runOnce(() -> shooterAlwaysOnEnabled = !shooterAlwaysOnEnabled));
+
+    shooter.setDefaultCommand(shooter.run(() -> {
+      if (shooterAlwaysOnEnabled) {
+        shooter.setFlywheelOnlyPower(ShooterConstants.SHOOTER_ALWAYS_ON_DEFAULT_POWER);
+      } else {
+        shooter.stop();
+      }
+    }));
 
     intakePivot.setDefaultCommand(intakePivot.run(intakePivot::stop));
 

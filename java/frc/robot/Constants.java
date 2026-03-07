@@ -150,15 +150,18 @@ public final class Constants
     public static final int SPARKFLEX_CURRENT_LIMIT_AMPS = 80;
     public static final double SHOOTER_INTAKE_POWER = 0.99;
     public static final double SHOOTER_CAL_POINT_NEAR_DISTANCE_FEET = 6.15;
-    public static final double SHOOTER_CAL_POINT_NEAR_POWER = 0.475;
+    public static final double SHOOTER_CAL_POINT_NEAR_POWER = 0.495;
     public static final double SHOOTER_CAL_POINT_MID_DISTANCE_FEET = 7.75;
-    public static final double SHOOTER_CAL_POINT_MID_POWER = 0.495;
+    public static final double SHOOTER_CAL_POINT_MID_POWER = 0.515;
     public static final double SHOOTER_CAL_POINT_FAR_DISTANCE_FEET = 8.34;
-    public static final double SHOOTER_CAL_POINT_FAR_POWER = 0.525;
+    public static final double SHOOTER_CAL_POINT_FAR_POWER = 0.545;
     public static final double SHOOTER_POWER_NO_TAG_DEFAULT = 0.50;
     // Fixed shooter power modes for driver bumpers (independent of Limelight distance).
     public static final double SHOOTER_FIXED_POWER_DRIVER = 0.90;
     public static final double SHOOTER_FIXED_POWER_DRIVER_LOW = 0.50;
+    // If true, keep flywheel running at default power when not overridden by driver controls.
+    public static final boolean SHOOTER_ALWAYS_ON_ENABLED = true;
+    public static final double SHOOTER_ALWAYS_ON_DEFAULT_POWER = SHOOTER_FIXED_POWER_DRIVER_LOW;
     public static final boolean SHOOTER_CALIBRATION_MODE_ENABLED = false;
     public static final double SHOOTER_CALIBRATION_DEFAULT_POWER = 0.40;
     public static final double SHOOTER_POWER_TOLERANCE = 0.02;

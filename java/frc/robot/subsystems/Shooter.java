@@ -84,6 +84,17 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
     }
   }
 
+  public void setFlywheelOnlyPower(double power) {
+    double requestedPower = Double.isFinite(power)
+        ? power
+        : ShooterConstants.SHOOTER_POWER_NO_TAG_DEFAULT;
+    currentShooterPower = MathUtil.clamp(requestedPower, -1.0, 1.0);
+    middleShooterMotor.set(currentShooterPower);
+    // Keep feeder/agitator off in always-on flywheel mode.
+    shooterIntakeMotor.stopMotor();
+    setAgitatorPower(0.0);
+  }
+
   public void setShooterIntakePower(double power) {
     shooterIntakeMotor.set(MathUtil.clamp(power, -1.0, 1.0));
   }
