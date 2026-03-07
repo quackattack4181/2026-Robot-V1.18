@@ -109,6 +109,7 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     configureBindings();
+    SmartDashboard.putBoolean("Shooter Always On Enabled", shooterAlwaysOnEnabled);
 
     NetworkTable elasticTable = NetworkTableInstance.getDefault().getTable("Elastic");
     autoSelectedEntry = elasticTable.getEntry(AUTO_SELECTED_KEY);
@@ -183,6 +184,18 @@ public class RobotContainer {
         intakePivot::stopWheels);
   }
 
+  private void setShooterAlwaysOnEnabled(boolean enabled) {
+    shooterAlwaysOnEnabled = enabled;
+    SmartDashboard.putBoolean("Shooter Always On Enabled", shooterAlwaysOnEnabled);
+    if (!shooterAlwaysOnEnabled) {
+      shooter.stop();
+    }
+  }
+
+  private void toggleShooterAlwaysOnEnabled() {
+    setShooterAlwaysOnEnabled(!shooterAlwaysOnEnabled);
+  }
+
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary predicate, or via the
@@ -249,14 +262,9 @@ public class RobotContainer {
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
     // Press left bumper to toggle always-on flywheel mode on/off.
-    // Keep default ON, but let driver immediately disable/enable at runtime.
-    driverOne.leftBumper()
-        .onTrue(Commands.runOnce(() -> {
-          shooterAlwaysOnEnabled = !shooterAlwaysOnEnabled;
-          if (!shooterAlwaysOnEnabled) {
-            shooter.stop();
-          }
-        }));
+    // This can disable always-on even when the constant default is true.
+    new Trigger(driverOne.getHID()::getLeftBumperButton)
+        .onTrue(Commands.runOnce(this::toggleShooterAlwaysOnEnabled));
 
     shooter.setDefaultCommand(shooter.run(() -> {
       if (shooterAlwaysOnEnabled) {
