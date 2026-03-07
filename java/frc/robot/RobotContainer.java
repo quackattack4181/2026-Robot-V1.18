@@ -227,11 +227,6 @@ public class RobotContainer {
             shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER),
             runIntakeWheelsWithoutRequirements(IntakeConstants.WHEEL_POWER)));
 
-    // Driver one low-power fixed shot mode on left bumper (no Limelight aim/distance usage).
-    driverOne.leftBumper().whileTrue(
-        Commands.parallel(
-            shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER_LOW),
-            runIntakeWheelsWithoutRequirements(IntakeConstants.WHEEL_POWER)));
 
     // Driver one climb lineup test: hold X to center on climb tag and hold ~9ft distance.
     driverOne.x().whileTrue(drivebase.lineUpToTagAtDistance(
@@ -253,8 +248,8 @@ public class RobotContainer {
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
-    // Press left stick to toggle always-on flywheel mode on/off.
-    driverOne.leftStick().debounce(0.1)
+    // Press left bumper to toggle always-on flywheel mode on/off.
+    driverOne.leftBumper().debounce(0.1)
         .onTrue(Commands.runOnce(() -> shooterAlwaysOnEnabled = !shooterAlwaysOnEnabled));
 
     shooter.setDefaultCommand(shooter.run(() -> {
