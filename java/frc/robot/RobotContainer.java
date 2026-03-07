@@ -253,8 +253,8 @@ public class RobotContainer {
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
-    // Press both stick buttons together to toggle always-on flywheel mode.
-    driverOne.leftStick().and(driverOne.rightStick()).debounce(0.1)
+    // Hold left stick, then press right stick to toggle always-on flywheel mode.
+    driverOne.rightStick().and(driverOne.leftStick()).debounce(0.1)
         .onTrue(Commands.runOnce(() -> shooterAlwaysOnEnabled = !shooterAlwaysOnEnabled));
 
     shooter.setDefaultCommand(shooter.run(() -> {
