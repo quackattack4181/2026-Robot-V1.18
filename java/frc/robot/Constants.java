@@ -69,9 +69,9 @@ public final class Constants
     public static final int[] ALLOWED_AIM_TAG_IDS = SHOOTING_AIM_TAG_IDS;
     public static final int[] CLIMBER_APPROVED_TAG_IDS = {10, 26, 12};
     // Linear calibration for Limelight distance inches: calibrated = raw * scale + offset.
-    // Defaults fit two tape-measure points: (raw 68.0 -> true 68.0), (raw 103.5 -> true 105.0).
+    // Offset is currently adjusted for camera relocation (~15 in forward, ~7 in upward).
     public static final double LIMELIGHT_DISTANCE_SCALE = 1.0422535;
-    public static final double LIMELIGHT_DISTANCE_OFFSET_INCHES = 0.0;
+    public static final double LIMELIGHT_DISTANCE_OFFSET_INCHES = 15.0;
   }
   public static class CustomConstants
   {
@@ -177,7 +177,7 @@ public final class Constants
     public static final int AGITATOR_MOTOR_TWO_ID = 26;
     public static final boolean AGITATOR_MOTOR_ONE_INVERTED = false;
     public static final boolean AGITATOR_MOTOR_TWO_INVERTED = true;
-    public static final boolean AGITATOR_ENABLED = true;
+    public static final boolean AGITATOR_ENABLED = false;
     public static final double AGITATOR_POWER = 1.0;
 
     // OLD (currently unused): legacy intake PID/F placeholders for shooter feed motor.
@@ -234,8 +234,11 @@ public final class Constants
     // Manual soft limits (degrees) after applying offset.
     // Typical setup requested: inward = 0.0, outward = positive value.
     public static final double PIVOT_MAX_INWARD_ANGLE = 0.0;
-    public static final double PIVOT_MAX_OUTWARD_ANGLE = 90.0;
+    public static final double PIVOT_MAX_OUTWARD_ANGLE = 96.0;
     public static final double PIVOT_ANGLE_TOLERANCE_DEGREES = 0.5;
     public static final double WHEEL_POWER = 0.99;
+    // If true, keep intake wheels running in teleop unless overridden/toggled off.
+    public static final boolean INTAKE_WHEELS_ALWAYS_ON_ENABLED = true;
+    public static final double INTAKE_WHEELS_ALWAYS_ON_POWER = WHEEL_POWER;
   }
 }

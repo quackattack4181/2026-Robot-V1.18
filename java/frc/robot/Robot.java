@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 // import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -26,6 +29,10 @@ public class Robot extends TimedRobot
   public RobotContainer m_robotContainer;
 
   private Timer disabledTimer;
+  private final NetworkTableEntry matchTimeEntry = NetworkTableInstance.getDefault()
+      .getTable("Elastic").getEntry("Match Time (s)");
+  private final NetworkTableEntry gameDataEntry = NetworkTableInstance.getDefault()
+      .getTable("Elastic").getEntry("Game Specific Message");
 
   public Robot()
   {
@@ -68,6 +75,12 @@ public class Robot extends TimedRobot
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     // SmartDashboard.putNumber("Front Left Module", swervelib.SwerveDrive.getModulePositions()[0].angle.getDegrees());
+
+    double matchTimeSeconds = DriverStation.getMatchTime();
+    if (matchTimeSeconds >= 0.0) {
+      matchTimeEntry.setDouble(matchTimeSeconds);
+    }
+    gameDataEntry.setString(DriverStation.getGameSpecificMessage());
 
     // Robot.getInstance().m_robotContainer.LimeLightSystem.update();
     // Robot.getInstance().m_robotContainer.SecondHead.update();

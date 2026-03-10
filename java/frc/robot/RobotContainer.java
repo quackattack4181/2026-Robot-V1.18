@@ -67,6 +67,7 @@ public class RobotContainer {
   private final IntakePivot intakePivot = new IntakePivot();
   private final Climber climber = OperatorConstants.CLIMBER_ENABLED ? new Climber() : null;
   private boolean shooterAlwaysOnEnabled = ShooterConstants.SHOOTER_ALWAYS_ON_ENABLED;
+  private boolean intakeWheelsAlwaysOnEnabled = IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_ENABLED;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController driverOne = new CommandXboxController(0);
@@ -110,6 +111,7 @@ public class RobotContainer {
     // Configure the trigger bindings
     configureBindings();
     SmartDashboard.putBoolean("Shooter Always On Enabled", shooterAlwaysOnEnabled);
+    SmartDashboard.putBoolean("Intake Wheels Always On Enabled", intakeWheelsAlwaysOnEnabled);
 
     NetworkTable elasticTable = NetworkTableInstance.getDefault().getTable("Elastic");
     autoSelectedEntry = elasticTable.getEntry(AUTO_SELECTED_KEY);
@@ -187,13 +189,24 @@ public class RobotContainer {
   private void setShooterAlwaysOnEnabled(boolean enabled) {
     shooterAlwaysOnEnabled = enabled;
     SmartDashboard.putBoolean("Shooter Always On Enabled", shooterAlwaysOnEnabled);
+    SmartDashboard.putBoolean("Intake Wheels Always On Enabled", intakeWheelsAlwaysOnEnabled);
     if (!shooterAlwaysOnEnabled) {
       shooter.stop();
     }
   }
 
-  private void toggleShooterAlwaysOnEnabled() {
-    setShooterAlwaysOnEnabled(!shooterAlwaysOnEnabled);
+  private void setIntakeWheelsAlwaysOnEnabled(boolean enabled) {
+    intakeWheelsAlwaysOnEnabled = enabled;
+    SmartDashboard.putBoolean("Intake Wheels Always On Enabled", intakeWheelsAlwaysOnEnabled);
+    if (!intakeWheelsAlwaysOnEnabled) {
+      intakePivot.stopWheels();
+    }
+  }
+
+  private void toggleAlwaysOnModes() {
+    boolean nextEnabled = !shooterAlwaysOnEnabled;
+    setShooterAlwaysOnEnabled(nextEnabled);
+    setIntakeWheelsAlwaysOnEnabled(nextEnabled);
   }
 
   /**
@@ -264,7 +277,7 @@ public class RobotContainer {
     // Press left bumper to toggle always-on flywheel mode on/off.
     // This can disable always-on even when the constant default is true.
     new Trigger(driverOne.getHID()::getLeftBumperButton)
-        .onTrue(Commands.runOnce(this::toggleShooterAlwaysOnEnabled));
+        .onTrue(Commands.runOnce(this::toggleAlwaysOnModes));
 
     shooter.setDefaultCommand(shooter.run(() -> {
       if (shooterAlwaysOnEnabled) {
@@ -274,7 +287,14 @@ public class RobotContainer {
       }
     }));
 
-    intakePivot.setDefaultCommand(intakePivot.run(intakePivot::stop));
+    intakePivot.setDefaultCommand(intakePivot.run(() -> {
+      intakePivot.stop();
+      if (intakeWheelsAlwaysOnEnabled) {
+        intakePivot.setWheelPower(IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_POWER);
+      } else {
+        intakePivot.stopWheels();
+      }
+    }));
 
     // Pivot manual control moved from POV to intake controller left stick Y.
     // Forward stick (negative Y) behaves like previous POV up.
