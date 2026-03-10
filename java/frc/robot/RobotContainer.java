@@ -132,21 +132,17 @@ public class RobotContainer {
         Set.of(drivebase)));
     NamedCommands.registerCommand("runIntakeDown", intakePivot.moveToOutAngleCommand());
     NamedCommands.registerCommand("runIntakeUp", intakePivot.moveToInAngleCommand());
-    // "runShooterOn" now mimics driver behavior: auto-aim while shooting.
-    NamedCommands.registerCommand("runShooterOn", createAutoAimAndShootCommand(5.0));
-    NamedCommands.registerCommand("runShooterOff", shooter.stopShooterCommand());
-    NamedCommands.registerCommand("runShooterFor1Sec", createAutoAimAndShootCommand(1.0));
-    NamedCommands.registerCommand("runShooterFor2Sec", createAutoAimAndShootCommand(2.0));
-    NamedCommands.registerCommand("runShooterFor3Sec", createAutoAimAndShootCommand(3.0));
-    NamedCommands.registerCommand("runAimAndShootFor3Sec", createAutoAimAndShootCommand(3.0));
-    NamedCommands.registerCommand("runShooterFor4Sec", createAutoAimAndShootCommand(4.0));
-    NamedCommands.registerCommand("runAimAndShootFor4Sec", createAutoAimAndShootCommand(4.0));
-    NamedCommands.registerCommand("runShooterFor5Sec", createAutoAimAndShootCommand(5.0));
-    NamedCommands.registerCommand("runAimAndShootFor5Sec", createAutoAimAndShootCommand(5.0));
-    NamedCommands.registerCommand("runShooterFor6Sec", createAutoAimAndShootCommand(6.0));
-    NamedCommands.registerCommand("runAimAndShootFor6Sec", createAutoAimAndShootCommand(6.0));
-    NamedCommands.registerCommand("runShooterFor7Sec", createAutoAimAndShootCommand(7.0));
-    NamedCommands.registerCommand("runAimAndShootFor7Sec", createAutoAimAndShootCommand(7.0));
+    // Simple auto aim+shoot commands: runShoot1 .. runShoot10 (seconds).
+    NamedCommands.registerCommand("runShoot1", createAutoAimAndShootCommand(1.0));
+    NamedCommands.registerCommand("runShoot2", createAutoAimAndShootCommand(2.0));
+    NamedCommands.registerCommand("runShoot3", createAutoAimAndShootCommand(3.0));
+    NamedCommands.registerCommand("runShoot4", createAutoAimAndShootCommand(4.0));
+    NamedCommands.registerCommand("runShoot5", createAutoAimAndShootCommand(5.0));
+    NamedCommands.registerCommand("runShoot6", createAutoAimAndShootCommand(6.0));
+    NamedCommands.registerCommand("runShoot7", createAutoAimAndShootCommand(7.0));
+    NamedCommands.registerCommand("runShoot8", createAutoAimAndShootCommand(8.0));
+    NamedCommands.registerCommand("runShoot9", createAutoAimAndShootCommand(9.0));
+    NamedCommands.registerCommand("runShoot10", createAutoAimAndShootCommand(10.0));
     NamedCommands.registerCommand("runPause5", Commands.waitSeconds(5.0));
     NamedCommands.registerCommand("runDriveToClimbSetupLeft", createAutoDriveToClimbSetupCommand(
         ClimbSetupConstants.LEFT_TARGET_POSE,
