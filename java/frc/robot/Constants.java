@@ -240,5 +240,7 @@ public final class Constants
     // If true, keep intake wheels running in teleop unless overridden/toggled off.
     public static final boolean INTAKE_WHEELS_ALWAYS_ON_ENABLED = true;
     public static final double INTAKE_WHEELS_ALWAYS_ON_POWER = WHEEL_POWER;
+    // Only run intake wheels always-on once pivot is past this angle (offset-adjusted degrees).
+    public static final double INTAKE_WHEELS_ALWAYS_ON_MIN_PIVOT_ANGLE_DEGREES = 50.0;
   }
 }

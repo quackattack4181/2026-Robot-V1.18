@@ -302,7 +302,8 @@ public class RobotContainer {
 
     intakePivot.setDefaultCommand(intakePivot.run(() -> {
       intakePivot.stop();
-      if (intakeWheelsAlwaysOnEnabled) {
+      if (intakeWheelsAlwaysOnEnabled
+          && intakePivot.getPivotAngleDegrees() >= IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_MIN_PIVOT_ANGLE_DEGREES) {
         intakePivot.setWheelPower(IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_POWER);
       } else {
         intakePivot.stopWheels();
