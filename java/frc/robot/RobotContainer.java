@@ -118,6 +118,18 @@ public class RobotContainer {
     autoOptionsEntry = elasticTable.getEntry(AUTO_OPTIONS_KEY);
 
     NamedCommands.registerCommand("runAlignToTag", drivebase.aimAtLimelightTarget(VisionConstants.LIMELIGHT_NAME));
+    NamedCommands.registerCommand("runRotateToZero", Commands.defer(
+        () -> {
+          double deltaDegrees = MathUtil.inputModulus(0.0 - drivebase.getHeading().getDegrees(), -180.0, 180.0);
+          return drivebase.rotateByDegreesCommand(deltaDegrees, 2.0);
+        },
+        Set.of(drivebase)));
+    NamedCommands.registerCommand("runRotateToOpposite", Commands.defer(
+        () -> {
+          double deltaDegrees = MathUtil.inputModulus(-180.0 - drivebase.getHeading().getDegrees(), -180.0, 180.0);
+          return drivebase.rotateByDegreesCommand(deltaDegrees, 2.0);
+        },
+        Set.of(drivebase)));
     NamedCommands.registerCommand("runIntakePivotOut", intakePivot.moveToOutAngleCommand());
     NamedCommands.registerCommand("runIntakePivotIn", intakePivot.moveToInAngleCommand());
     NamedCommands.registerCommand("runIntakeDown", intakePivot.moveToOutAngleCommand());
@@ -126,6 +138,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("runIntakeWheelsOn", Commands.startEnd(
         () -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER),
         intakePivot::stopWheels).withTimeout(5.0));
+    NamedCommands.registerCommand("runIntakeWheelsOff", intakePivot.stopWheelsCommand());
     // "runShooterOn" now mimics driver behavior: auto-aim while shooting.
     NamedCommands.registerCommand("runShooterOn", createAutoAimAndShootCommand(5.0));
     NamedCommands.registerCommand("runShooterOff", shooter.stopShooterCommand());
