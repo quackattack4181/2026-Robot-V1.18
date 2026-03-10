@@ -118,13 +118,13 @@ public class RobotContainer {
     autoOptionsEntry = elasticTable.getEntry(AUTO_OPTIONS_KEY);
 
     NamedCommands.registerCommand("runAlignToTag", drivebase.aimAtLimelightTarget(VisionConstants.LIMELIGHT_NAME));
-    NamedCommands.registerCommand("runRotateToZero", Commands.defer(
+    NamedCommands.registerCommand("runRotate0", Commands.defer(
         () -> {
           double deltaDegrees = MathUtil.inputModulus(0.0 - drivebase.getHeading().getDegrees(), -180.0, 180.0);
           return drivebase.rotateByDegreesCommand(deltaDegrees, 2.0);
         },
         Set.of(drivebase)));
-    NamedCommands.registerCommand("runRotateToOpposite", Commands.defer(
+    NamedCommands.registerCommand("runRotate180", Commands.defer(
         () -> {
           double deltaDegrees = MathUtil.inputModulus(-180.0 - drivebase.getHeading().getDegrees(), -180.0, 180.0);
           return drivebase.rotateByDegreesCommand(deltaDegrees, 2.0);
