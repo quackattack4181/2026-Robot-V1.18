@@ -130,15 +130,8 @@ public class RobotContainer {
           return drivebase.rotateByDegreesCommand(deltaDegrees, 2.0);
         },
         Set.of(drivebase)));
-    NamedCommands.registerCommand("runIntakePivotOut", intakePivot.moveToOutAngleCommand());
-    NamedCommands.registerCommand("runIntakePivotIn", intakePivot.moveToInAngleCommand());
     NamedCommands.registerCommand("runIntakeDown", intakePivot.moveToOutAngleCommand());
     NamedCommands.registerCommand("runIntakeUp", intakePivot.moveToInAngleCommand());
-    // Intentionally no subsystem requirements here so PathPlanner can parallel this with pivot movement.
-    NamedCommands.registerCommand("runIntakeWheelsOn", Commands.startEnd(
-        () -> intakePivot.setWheelPower(IntakeConstants.WHEEL_POWER),
-        intakePivot::stopWheels).withTimeout(5.0));
-    NamedCommands.registerCommand("runIntakeWheelsOff", intakePivot.stopWheelsCommand());
     // "runShooterOn" now mimics driver behavior: auto-aim while shooting.
     NamedCommands.registerCommand("runShooterOn", createAutoAimAndShootCommand(5.0));
     NamedCommands.registerCommand("runShooterOff", shooter.stopShooterCommand());
