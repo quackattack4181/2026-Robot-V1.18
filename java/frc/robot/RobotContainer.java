@@ -69,6 +69,12 @@ public class RobotContainer {
   private final NetworkTableEntry shooterKiEntry;
   private final NetworkTableEntry shooterKdEntry;
   private final NetworkTableEntry shooterKfEntry;
+  private final NetworkTableEntry teleopTranslationScaleEntry;
+  private final NetworkTableEntry teleopStrafeScaleEntry;
+  private final NetworkTableEntry teleopRotationScaleEntry;
+  private final NetworkTableEntry teleopLeftXDeadbandEntry;
+  private final NetworkTableEntry teleopLeftYDeadbandEntry;
+  private final NetworkTableEntry teleopRightXDeadbandEntry;
   private final Map<String, Command> autoOptions = new LinkedHashMap<>();
   private final SendableChooser<String> autoChooser = new SendableChooser<>();
 
@@ -80,6 +86,12 @@ public class RobotContainer {
   private final Climber climber = OperatorConstants.CLIMBER_ENABLED ? new Climber() : null;
   private boolean shooterAlwaysOnEnabled = ShooterConstants.SHOOTER_ALWAYS_ON_ENABLED;
   private boolean intakeWheelsAlwaysOnEnabled = IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_ENABLED;
+  private double teleopTranslationScale = CalibrationConstants.TELEOP_TRANSLATION_SCALE;
+  private double teleopStrafeScale = CalibrationConstants.TELEOP_STRAFE_SCALE;
+  private double teleopRotationScale = CalibrationConstants.TELEOP_ROTATION_SCALE;
+  private double teleopLeftXDeadband = CalibrationConstants.TELEOP_LEFT_X_DEADBAND;
+  private double teleopLeftYDeadband = CalibrationConstants.TELEOP_LEFT_Y_DEADBAND;
+  private double teleopRightXDeadband = CalibrationConstants.TELEOP_RIGHT_X_DEADBAND;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController driverOne = new CommandXboxController(0);
@@ -93,10 +105,10 @@ public class RobotContainer {
   // left stick controls translation
   // right stick controls the desired angle NOT angular rotation
   Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
-      () -> MathUtil.applyDeadband(-driverOne.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND), // <<<===== CHANGED from -
-      () -> MathUtil.applyDeadband(-driverOne.getLeftX(), OperatorConstants.LEFT_X_DEADBAND), // <<<===== CHANGED from -
-      () -> -driverOne.getRightX(), // <<<===== CHANGED from -
-      () -> -driverOne.getRightY()); // <<<===== CHANGED from -
+      () -> teleopTranslationScale * MathUtil.applyDeadband(-driverOne.getLeftY(), teleopLeftYDeadband),
+      () -> teleopStrafeScale * MathUtil.applyDeadband(-driverOne.getLeftX(), teleopLeftXDeadband),
+      () -> -teleopRotationScale * MathUtil.applyDeadband(driverOne.getRightX(), teleopRightXDeadband),
+      () -> -driverOne.getRightY());
 
   // Applies deadbands and inverts controls because joysticks
   // are back-right positive while robot
@@ -104,13 +116,13 @@ public class RobotContainer {
   // left stick controls translation
   // right stick controls the angular velocity of the robot
   Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
-      () -> MathUtil.applyDeadband(driverOne.getLeftY() * -1, OperatorConstants.LEFT_Y_DEADBAND),
-      () -> MathUtil.applyDeadband(driverOne.getLeftX() * -1, OperatorConstants.LEFT_X_DEADBAND),
-      () -> driverOne.getRightX() * -1);
+      () -> teleopTranslationScale * MathUtil.applyDeadband(driverOne.getLeftY() * -1, teleopLeftYDeadband),
+      () -> teleopStrafeScale * MathUtil.applyDeadband(driverOne.getLeftX() * -1, teleopLeftXDeadband),
+      () -> -teleopRotationScale * MathUtil.applyDeadband(driverOne.getRightX(), teleopRightXDeadband));
 
   Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
-      () -> MathUtil.applyDeadband(driverOne.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-      () -> MathUtil.applyDeadband(driverOne.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+      () -> teleopTranslationScale * MathUtil.applyDeadband(driverOne.getLeftY(), teleopLeftYDeadband),
+      () -> teleopStrafeScale * MathUtil.applyDeadband(driverOne.getLeftX(), teleopLeftXDeadband),
       () -> driverOne.getRawAxis(2));
 
   /**
@@ -140,6 +152,12 @@ public class RobotContainer {
     shooterKiEntry = elasticTable.getEntry("Shooter PID kI");
     shooterKdEntry = elasticTable.getEntry("Shooter PID kD");
     shooterKfEntry = elasticTable.getEntry("Shooter PID kF");
+    teleopTranslationScaleEntry = elasticTable.getEntry("Teleop Translation Scale");
+    teleopStrafeScaleEntry = elasticTable.getEntry("Teleop Strafe Scale");
+    teleopRotationScaleEntry = elasticTable.getEntry("Teleop Rotation Scale");
+    teleopLeftXDeadbandEntry = elasticTable.getEntry("Teleop LeftX Deadband");
+    teleopLeftYDeadbandEntry = elasticTable.getEntry("Teleop LeftY Deadband");
+    teleopRightXDeadbandEntry = elasticTable.getEntry("Teleop RightX Deadband");
 
     calibrationModeEnabledEntry.setBoolean(CalibrationConstants.ROBOT_CALIBRATION_MODE_ENABLED);
     swerveHeadingKpEntry.setDouble(CalibrationConstants.SWERVE_HEADING_KP);
@@ -152,6 +170,12 @@ public class RobotContainer {
     shooterKiEntry.setDouble(CalibrationConstants.SHOOTER_KI);
     shooterKdEntry.setDouble(CalibrationConstants.SHOOTER_KD);
     shooterKfEntry.setDouble(CalibrationConstants.SHOOTER_KF);
+    teleopTranslationScaleEntry.setDouble(CalibrationConstants.TELEOP_TRANSLATION_SCALE);
+    teleopStrafeScaleEntry.setDouble(CalibrationConstants.TELEOP_STRAFE_SCALE);
+    teleopRotationScaleEntry.setDouble(CalibrationConstants.TELEOP_ROTATION_SCALE);
+    teleopLeftXDeadbandEntry.setDouble(CalibrationConstants.TELEOP_LEFT_X_DEADBAND);
+    teleopLeftYDeadbandEntry.setDouble(CalibrationConstants.TELEOP_LEFT_Y_DEADBAND);
+    teleopRightXDeadbandEntry.setDouble(CalibrationConstants.TELEOP_RIGHT_X_DEADBAND);
     updateCalibrationFromDashboard();
 
     NamedCommands.registerCommand("runAlignToTag", drivebase.aimAtLimelightTarget(VisionConstants.LIMELIGHT_NAME));
@@ -275,8 +299,8 @@ public class RobotContainer {
 
     driverOne.leftTrigger(triggerThreshold)
              .whileTrue(drivebase.driveFieldOrientedWithLimelight(
-                 () -> MathUtil.applyDeadband(-driverOne.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-                 () -> MathUtil.applyDeadband(-driverOne.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+                 () -> teleopTranslationScale * MathUtil.applyDeadband(-driverOne.getLeftY(), teleopLeftYDeadband),
+                 () -> teleopStrafeScale * MathUtil.applyDeadband(-driverOne.getLeftX(), teleopLeftXDeadband),
                  VisionConstants.LIMELIGHT_NAME));
 
     driverOne.rightTrigger(triggerThreshold).whileTrue(
@@ -538,6 +562,31 @@ public class RobotContainer {
         CalibrationConstants.ROBOT_CALIBRATION_MODE_ENABLED);
 
     shooter.setRobotCalibrationModeEnabled(calibrationEnabled);
+
+    teleopTranslationScale = MathUtil.clamp(
+        teleopTranslationScaleEntry.getDouble(CalibrationConstants.TELEOP_TRANSLATION_SCALE),
+        0.0,
+        1.5);
+    teleopStrafeScale = MathUtil.clamp(
+        teleopStrafeScaleEntry.getDouble(CalibrationConstants.TELEOP_STRAFE_SCALE),
+        0.0,
+        1.5);
+    teleopRotationScale = MathUtil.clamp(
+        teleopRotationScaleEntry.getDouble(CalibrationConstants.TELEOP_ROTATION_SCALE),
+        0.0,
+        1.5);
+    teleopLeftXDeadband = MathUtil.clamp(
+        teleopLeftXDeadbandEntry.getDouble(CalibrationConstants.TELEOP_LEFT_X_DEADBAND),
+        0.0,
+        0.5);
+    teleopLeftYDeadband = MathUtil.clamp(
+        teleopLeftYDeadbandEntry.getDouble(CalibrationConstants.TELEOP_LEFT_Y_DEADBAND),
+        0.0,
+        0.5);
+    teleopRightXDeadband = MathUtil.clamp(
+        teleopRightXDeadbandEntry.getDouble(CalibrationConstants.TELEOP_RIGHT_X_DEADBAND),
+        0.0,
+        0.5);
 
     if (!calibrationEnabled) {
       return;

@@ -100,6 +100,14 @@ public final class Constants
     public static final double SHOOTER_KI = ShooterConstants.SHOOTER_KI;
     public static final double SHOOTER_KD = ShooterConstants.SHOOTER_KD;
     public static final double SHOOTER_KF = ShooterConstants.SHOOTER_KF;
+
+    // Teleop swerve tuning (driver feel).
+    public static final double TELEOP_TRANSLATION_SCALE = 1.0;
+    public static final double TELEOP_STRAFE_SCALE = 1.0;
+    public static final double TELEOP_ROTATION_SCALE = 1.0;
+    public static final double TELEOP_LEFT_X_DEADBAND = OperatorConstants.LEFT_X_DEADBAND;
+    public static final double TELEOP_LEFT_Y_DEADBAND = OperatorConstants.LEFT_Y_DEADBAND;
+    public static final double TELEOP_RIGHT_X_DEADBAND = OperatorConstants.RIGHT_X_DEADBAND;
   }
 
 
