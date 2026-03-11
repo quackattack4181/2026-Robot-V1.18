@@ -33,8 +33,14 @@ public final class Constants
   public static final class AutonConstants
   {
 
-   public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.7, 0, 0);
-    public static final PIDConstants ANGLE_PID       = new PIDConstants(0.4, 0, 0.01);
+    // PathPlanner autonomous path-following PID values.
+    // Keep these independent from teleop driver-feel tuning.
+    public static final PIDConstants PATH_TRANSLATION_PID = new PIDConstants(1.15, 0, 0.0);
+    public static final PIDConstants PATH_ANGLE_PID       = new PIDConstants(7.0, 0.0, 0.0);
+
+    // Legacy aliases kept for compatibility in existing references.
+    public static final PIDConstants TRANSLATION_PID = PATH_TRANSLATION_PID;
+    public static final PIDConstants ANGLE_PID       = PATH_ANGLE_PID;
   }
 
   public static final class DrivebaseConstants
