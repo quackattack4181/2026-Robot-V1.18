@@ -14,6 +14,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.CalibrationConstants;
 import frc.robot.Constants.ShooterConstants;
 import java.util.function.DoubleSupplier;
 
@@ -23,6 +24,11 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   private final SparkMax agitatorMotorOne;
   private final SparkMax agitatorMotorTwo;
   private final NetworkTableEntry shooterCalibrationPowerEntry;
+  private double shooterPidKp = CalibrationConstants.SHOOTER_KP;
+  private double shooterPidKi = CalibrationConstants.SHOOTER_KI;
+  private double shooterPidKd = CalibrationConstants.SHOOTER_KD;
+  private double shooterPidKf = CalibrationConstants.SHOOTER_KF;
+  private boolean robotCalibrationModeEnabled = CalibrationConstants.ROBOT_CALIBRATION_MODE_ENABLED;
 
   private double currentShooterPower = 0.0;
 
@@ -120,8 +126,35 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
         <= ShooterConstants.SHOOTER_POWER_TOLERANCE;
   }
 
+
+  public void setRobotCalibrationModeEnabled(boolean enabled) {
+    robotCalibrationModeEnabled = enabled;
+  }
+
+  public void setShooterPidConstants(double kp, double ki, double kd, double kf) {
+    shooterPidKp = kp;
+    shooterPidKi = ki;
+    shooterPidKd = kd;
+    shooterPidKf = kf;
+  }
+
+  public double getShooterPidKp() {
+    return shooterPidKp;
+  }
+
+  public double getShooterPidKi() {
+    return shooterPidKi;
+  }
+
+  public double getShooterPidKd() {
+    return shooterPidKd;
+  }
+
+  public double getShooterPidKf() {
+    return shooterPidKf;
+  }
   public double getTargetPowerForDistanceInches(double distanceInches) {
-    if (ShooterConstants.SHOOTER_CALIBRATION_MODE_ENABLED) {
+    if (robotCalibrationModeEnabled) {
       return MathUtil.clamp(
           shooterCalibrationPowerEntry.getDouble(ShooterConstants.SHOOTER_CALIBRATION_DEFAULT_POWER),
           -1.0,

@@ -74,10 +74,12 @@ public class SwerveSubsystem extends SubsystemBase
   /**
    * Limelight aim controller reused to avoid resource warnings.
    */
-  private final PIDController limelightAimController = new PIDController(Constants.VisionConstants.AIM_KP,
-                                                                         Constants.VisionConstants.AIM_KI,
-                                                                         Constants.VisionConstants.AIM_KD);
-  private final PIDController headingController = new PIDController(0.02, 0.0, 0.001);
+  private final PIDController limelightAimController = new PIDController(Constants.CalibrationConstants.SWERVE_AIM_KP,
+                                                                         Constants.CalibrationConstants.SWERVE_AIM_KI,
+                                                                         Constants.CalibrationConstants.SWERVE_AIM_KD);
+  private final PIDController headingController = new PIDController(Constants.CalibrationConstants.SWERVE_HEADING_KP,
+                                                                    Constants.CalibrationConstants.SWERVE_HEADING_KI,
+                                                                    Constants.CalibrationConstants.SWERVE_HEADING_KD);
   /**
    * Enable vision odometry updates while driving.
    */
@@ -182,6 +184,16 @@ public class SwerveSubsystem extends SubsystemBase
     // vision = new Vision(swerveDrive::getPose, swerveDrive.field);
   }
 
+
+  public void setHeadingPid(double kp, double ki, double kd)
+  {
+    headingController.setPID(kp, ki, kd);
+  }
+
+  public void setLimelightAimPid(double kp, double ki, double kd)
+  {
+    limelightAimController.setPID(kp, ki, kd);
+  }
   @Override
   public void periodic()
   {

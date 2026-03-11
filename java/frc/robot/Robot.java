@@ -81,6 +81,7 @@ public class Robot extends TimedRobot
       matchTimeEntry.setDouble(matchTimeSeconds);
     }
     gameDataEntry.setString(DriverStation.getGameSpecificMessage());
+    m_robotContainer.updateCalibrationFromDashboard();
 
     // Robot.getInstance().m_robotContainer.LimeLightSystem.update();
     // Robot.getInstance().m_robotContainer.SecondHead.update();

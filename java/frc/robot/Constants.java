@@ -79,6 +79,30 @@ public final class Constants
 
   }
 
+
+  public static final class CalibrationConstants
+  {
+    // Master switch for live tuning from Elastic dashboard.
+    public static final boolean ROBOT_CALIBRATION_MODE_ENABLED = false;
+
+    // Swerve heading PID (used by rotate commands).
+    public static final double SWERVE_HEADING_KP = 0.02;
+    public static final double SWERVE_HEADING_KI = 0.0;
+    public static final double SWERVE_HEADING_KD = 0.001;
+
+    // Swerve limelight-aim PID (used by tag-aim command).
+    public static final double SWERVE_AIM_KP = VisionConstants.AIM_KP;
+    public static final double SWERVE_AIM_KI = VisionConstants.AIM_KI;
+    public static final double SWERVE_AIM_KD = VisionConstants.AIM_KD;
+
+    // Shooter PID/F tuning values published to Elastic for live tuning.
+    public static final double SHOOTER_KP = ShooterConstants.SHOOTER_KP;
+    public static final double SHOOTER_KI = ShooterConstants.SHOOTER_KI;
+    public static final double SHOOTER_KD = ShooterConstants.SHOOTER_KD;
+    public static final double SHOOTER_KF = ShooterConstants.SHOOTER_KF;
+  }
+
+
   public static final class ClimbSetupConstants
   {
     // Update these values after parking robot where you want to start climb.
@@ -162,7 +186,7 @@ public final class Constants
     // If true, keep flywheel running at default power when not overridden by driver controls.
     public static final boolean SHOOTER_ALWAYS_ON_ENABLED = true;
     public static final double SHOOTER_ALWAYS_ON_DEFAULT_POWER = SHOOTER_FIXED_POWER_DRIVER_LOW;
-    public static final boolean SHOOTER_CALIBRATION_MODE_ENABLED = false;
+    public static final boolean SHOOTER_CALIBRATION_MODE_ENABLED = false; // legacy; use CalibrationConstants.ROBOT_CALIBRATION_MODE_ENABLED
     public static final double SHOOTER_CALIBRATION_DEFAULT_POWER = 0.40;
     public static final double SHOOTER_POWER_TOLERANCE = 0.02;
     public static final double SHOOTER_INTAKE_START_DELAY_SECONDS = 0.10;

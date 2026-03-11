@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.CalibrationConstants;
 import frc.robot.Constants.ClimbSetupConstants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.IntakeConstants;
@@ -57,6 +58,17 @@ public class RobotContainer {
   private static final String AUTO_OPTIONS_KEY = "Auto Options";
   private final NetworkTableEntry autoSelectedEntry;
   private final NetworkTableEntry autoOptionsEntry;
+  private final NetworkTableEntry calibrationModeEnabledEntry;
+  private final NetworkTableEntry swerveHeadingKpEntry;
+  private final NetworkTableEntry swerveHeadingKiEntry;
+  private final NetworkTableEntry swerveHeadingKdEntry;
+  private final NetworkTableEntry swerveAimKpEntry;
+  private final NetworkTableEntry swerveAimKiEntry;
+  private final NetworkTableEntry swerveAimKdEntry;
+  private final NetworkTableEntry shooterKpEntry;
+  private final NetworkTableEntry shooterKiEntry;
+  private final NetworkTableEntry shooterKdEntry;
+  private final NetworkTableEntry shooterKfEntry;
   private final Map<String, Command> autoOptions = new LinkedHashMap<>();
   private final SendableChooser<String> autoChooser = new SendableChooser<>();
 
@@ -116,6 +128,31 @@ public class RobotContainer {
     NetworkTable elasticTable = NetworkTableInstance.getDefault().getTable("Elastic");
     autoSelectedEntry = elasticTable.getEntry(AUTO_SELECTED_KEY);
     autoOptionsEntry = elasticTable.getEntry(AUTO_OPTIONS_KEY);
+
+    calibrationModeEnabledEntry = elasticTable.getEntry("Robot Calibration Mode Enabled");
+    swerveHeadingKpEntry = elasticTable.getEntry("Swerve Heading PID kP");
+    swerveHeadingKiEntry = elasticTable.getEntry("Swerve Heading PID kI");
+    swerveHeadingKdEntry = elasticTable.getEntry("Swerve Heading PID kD");
+    swerveAimKpEntry = elasticTable.getEntry("Swerve Aim PID kP");
+    swerveAimKiEntry = elasticTable.getEntry("Swerve Aim PID kI");
+    swerveAimKdEntry = elasticTable.getEntry("Swerve Aim PID kD");
+    shooterKpEntry = elasticTable.getEntry("Shooter PID kP");
+    shooterKiEntry = elasticTable.getEntry("Shooter PID kI");
+    shooterKdEntry = elasticTable.getEntry("Shooter PID kD");
+    shooterKfEntry = elasticTable.getEntry("Shooter PID kF");
+
+    calibrationModeEnabledEntry.setBoolean(CalibrationConstants.ROBOT_CALIBRATION_MODE_ENABLED);
+    swerveHeadingKpEntry.setDouble(CalibrationConstants.SWERVE_HEADING_KP);
+    swerveHeadingKiEntry.setDouble(CalibrationConstants.SWERVE_HEADING_KI);
+    swerveHeadingKdEntry.setDouble(CalibrationConstants.SWERVE_HEADING_KD);
+    swerveAimKpEntry.setDouble(CalibrationConstants.SWERVE_AIM_KP);
+    swerveAimKiEntry.setDouble(CalibrationConstants.SWERVE_AIM_KI);
+    swerveAimKdEntry.setDouble(CalibrationConstants.SWERVE_AIM_KD);
+    shooterKpEntry.setDouble(CalibrationConstants.SHOOTER_KP);
+    shooterKiEntry.setDouble(CalibrationConstants.SHOOTER_KI);
+    shooterKdEntry.setDouble(CalibrationConstants.SHOOTER_KD);
+    shooterKfEntry.setDouble(CalibrationConstants.SHOOTER_KF);
+    updateCalibrationFromDashboard();
 
     NamedCommands.registerCommand("runAlignToTag", drivebase.aimAtLimelightTarget(VisionConstants.LIMELIGHT_NAME));
     NamedCommands.registerCommand("runRotate0", Commands.defer(
@@ -493,6 +530,34 @@ public class RobotContainer {
 
     autoSelectedEntry.setString(fallbackAuto);
     return autoOptions.get(fallbackAuto);
+  }
+
+
+  public void updateCalibrationFromDashboard() {
+    boolean calibrationEnabled = calibrationModeEnabledEntry.getBoolean(
+        CalibrationConstants.ROBOT_CALIBRATION_MODE_ENABLED);
+
+    shooter.setRobotCalibrationModeEnabled(calibrationEnabled);
+
+    if (!calibrationEnabled) {
+      return;
+    }
+
+    drivebase.setHeadingPid(
+        swerveHeadingKpEntry.getDouble(CalibrationConstants.SWERVE_HEADING_KP),
+        swerveHeadingKiEntry.getDouble(CalibrationConstants.SWERVE_HEADING_KI),
+        swerveHeadingKdEntry.getDouble(CalibrationConstants.SWERVE_HEADING_KD));
+
+    drivebase.setLimelightAimPid(
+        swerveAimKpEntry.getDouble(CalibrationConstants.SWERVE_AIM_KP),
+        swerveAimKiEntry.getDouble(CalibrationConstants.SWERVE_AIM_KI),
+        swerveAimKdEntry.getDouble(CalibrationConstants.SWERVE_AIM_KD));
+
+    shooter.setShooterPidConstants(
+        shooterKpEntry.getDouble(CalibrationConstants.SHOOTER_KP),
+        shooterKiEntry.getDouble(CalibrationConstants.SHOOTER_KI),
+        shooterKdEntry.getDouble(CalibrationConstants.SHOOTER_KD),
+        shooterKfEntry.getDouble(CalibrationConstants.SHOOTER_KF));
   }
 
 
