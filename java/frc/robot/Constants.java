@@ -180,9 +180,11 @@ public final class Constants
   {
     public static final int SHOOTER_INTAKE_MOTOR_ID = 20;
     public static final int MIDDLE_SHOOTER_MOTOR_ID = 21;
+    public static final int SECOND_SHOOTER_MOTOR_ID = 22;
 
     public static final boolean SHOOTER_INTAKE_INVERTED = false;
     public static final boolean MIDDLE_SHOOTER_INVERTED = true;
+    public static final boolean SECOND_SHOOTER_INVERTED = !MIDDLE_SHOOTER_INVERTED;
 
     public static final int CURRENT_LIMIT_AMPS = 40;
     public static final int SPARKFLEX_CURRENT_LIMIT_AMPS = 80;

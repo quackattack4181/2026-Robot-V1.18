@@ -20,6 +20,7 @@ import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase implements AutoCloseable {
   private final SparkFlex middleShooterMotor;
+  private final SparkFlex secondShooterMotor;
   private final SparkMax shooterIntakeMotor;
   private final SparkMax agitatorMotorOne;
   private final SparkMax agitatorMotorTwo;
@@ -35,6 +36,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   public Shooter() {
     shooterIntakeMotor = new SparkMax(ShooterConstants.SHOOTER_INTAKE_MOTOR_ID, MotorType.kBrushless);
     middleShooterMotor = new SparkFlex(ShooterConstants.MIDDLE_SHOOTER_MOTOR_ID, MotorType.kBrushless);
+    secondShooterMotor = new SparkFlex(ShooterConstants.SECOND_SHOOTER_MOTOR_ID, MotorType.kBrushless);
     agitatorMotorOne = new SparkMax(ShooterConstants.AGITATOR_MOTOR_ONE_ID, MotorType.kBrushless);
     agitatorMotorTwo = new SparkMax(ShooterConstants.AGITATOR_MOTOR_TWO_ID, MotorType.kBrushless);
     shooterCalibrationPowerEntry = NetworkTableInstance.getDefault()
@@ -54,6 +56,12 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
     middleConfig.inverted(ShooterConstants.MIDDLE_SHOOTER_INVERTED);
     middleShooterMotor.configure(middleConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+    SparkFlexConfig secondConfig = new SparkFlexConfig();
+    secondConfig.idleMode(IdleMode.kCoast);
+    secondConfig.smartCurrentLimit(ShooterConstants.SPARKFLEX_CURRENT_LIMIT_AMPS);
+    secondConfig.inverted(ShooterConstants.SECOND_SHOOTER_INVERTED);
+    secondShooterMotor.configure(secondConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
     SparkMaxConfig agitatorOneConfig = new SparkMaxConfig();
     agitatorOneConfig.idleMode(IdleMode.kCoast);
     agitatorOneConfig.smartCurrentLimit(ShooterConstants.CURRENT_LIMIT_AMPS);
@@ -71,6 +79,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   public void stop() {
     shooterIntakeMotor.stopMotor();
     middleShooterMotor.stopMotor();
+    secondShooterMotor.stopMotor();
     agitatorMotorOne.stopMotor();
     agitatorMotorTwo.stopMotor();
     currentShooterPower = 0.0;
@@ -82,6 +91,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
         : ShooterConstants.SHOOTER_POWER_NO_TAG_DEFAULT;
     currentShooterPower = MathUtil.clamp(requestedPower, -1.0, 1.0);
     middleShooterMotor.set(currentShooterPower);
+    secondShooterMotor.set(currentShooterPower);
 
     if (Math.abs(currentShooterPower) > 1e-3) {
       setAgitatorPower(ShooterConstants.AGITATOR_POWER);
@@ -96,6 +106,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
         : ShooterConstants.SHOOTER_POWER_NO_TAG_DEFAULT;
     currentShooterPower = MathUtil.clamp(requestedPower, -1.0, 1.0);
     middleShooterMotor.set(currentShooterPower);
+    secondShooterMotor.set(currentShooterPower);
     // Keep feeder/agitator off in always-on flywheel mode.
     shooterIntakeMotor.stopMotor();
     setAgitatorPower(0.0);
@@ -249,6 +260,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   public void close() {
     shooterIntakeMotor.close();
     middleShooterMotor.close();
+    secondShooterMotor.close();
     agitatorMotorOne.close();
     agitatorMotorTwo.close();
   }

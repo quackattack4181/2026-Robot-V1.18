@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.Timer;
 // import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 // import limelight.networktables.LimelightResults;
 // import limelight.networktables.target.pipeline.NeuralClassifier;
 
@@ -33,6 +35,8 @@ public class Robot extends TimedRobot
       .getTable("Elastic").getEntry("Match Time (s)");
   private final NetworkTableEntry gameDataEntry = NetworkTableInstance.getDefault()
       .getTable("Elastic").getEntry("Game Specific Message");
+  private final NetworkTableEntry hubShiftTimeEntry = NetworkTableInstance.getDefault()
+      .getTable("Elastic").getEntry("Hub Shift Time (s)");
 
   public Robot()
   {
@@ -80,7 +84,9 @@ public class Robot extends TimedRobot
     if (matchTimeSeconds >= 0.0) {
       matchTimeEntry.setDouble(matchTimeSeconds);
     }
-    gameDataEntry.setString(DriverStation.getGameSpecificMessage());
+    String gameSpecificMessage = DriverStation.getGameSpecificMessage();
+    gameDataEntry.setString(gameSpecificMessage);
+    hubShiftTimeEntry.setDouble(parseHubShiftTimeSeconds(gameSpecificMessage));
     m_robotContainer.updateCalibrationFromDashboard();
 
     // Robot.getInstance().m_robotContainer.LimeLightSystem.update();
@@ -131,6 +137,29 @@ public class Robot extends TimedRobot
   @Override
   public void autonomousPeriodic()
   {
+  }
+
+
+  private double parseHubShiftTimeSeconds(String gameData)
+  {
+    if (gameData == null || gameData.isBlank())
+    {
+      return -1.0;
+    }
+
+    Matcher matcher = Pattern.compile("(-?\\d+(?:\\.\\d+)?)").matcher(gameData);
+    if (matcher.find())
+    {
+      try
+      {
+        return Double.parseDouble(matcher.group(1));
+      } catch (NumberFormatException ignored)
+      {
+        return -1.0;
+      }
+    }
+
+    return -1.0;
   }
 
   @Override
