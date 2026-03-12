@@ -252,39 +252,61 @@ public class RobotContainer {
 
 
   private Command createAutoIntakeDownCommand() {
-    Command monitorWheelsByAngle = intakePivot.run(() -> {
-      if (intakePivot.getPivotAngleDegrees() >= IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_MIN_PIVOT_ANGLE_DEGREES) {
-        intakePivot.setWheelPower(IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_POWER);
-      } else {
-        intakePivot.stopWheels();
-      }
-    });
+    final double targetAngle = IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE;
+    return intakePivot.runEnd(
+        () -> {
+          double currentAngle = intakePivot.getPivotAngleDegrees();
+          double error = targetAngle - currentAngle;
+          if (Math.abs(error) <= IntakeConstants.PIVOT_ANGLE_TOLERANCE_DEGREES) {
+            intakePivot.stop();
+          } else {
+            intakePivot.setPivotPower(Math.signum(error) * Math.abs(IntakeConstants.PIVOT_POWER));
+          }
 
-    return Commands.deadline(intakePivot.moveToOutAngleCommand(), monitorWheelsByAngle)
-        .andThen(Commands.runOnce(() -> {
+          if (currentAngle >= IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_MIN_PIVOT_ANGLE_DEGREES) {
+            intakePivot.setWheelPower(IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_POWER);
+          } else {
+            intakePivot.stopWheels();
+          }
+        },
+        () -> {
+          intakePivot.stop();
           if (intakePivot.getPivotAngleDegrees() >= IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_MIN_PIVOT_ANGLE_DEGREES) {
             intakePivot.setWheelPower(IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_POWER);
           } else {
             intakePivot.stopWheels();
           }
-        }, intakePivot));
+        })
+        .until(() -> intakePivot.isNearAngle(targetAngle))
+        .withTimeout(2.5);
   }
 
   private Command createAutoIntakeUpCommand() {
-    Command monitorWheelsByAngle = intakePivot.run(() -> {
-      if (intakePivot.getPivotAngleDegrees() >= IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_MIN_PIVOT_ANGLE_DEGREES) {
-        intakePivot.setWheelPower(IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_POWER);
-      } else {
-        intakePivot.stopWheels();
-      }
-    });
+    final double targetAngle = IntakeConstants.PIVOT_MAX_INWARD_ANGLE;
+    return intakePivot.runEnd(
+        () -> {
+          double currentAngle = intakePivot.getPivotAngleDegrees();
+          double error = targetAngle - currentAngle;
+          if (Math.abs(error) <= IntakeConstants.PIVOT_ANGLE_TOLERANCE_DEGREES) {
+            intakePivot.stop();
+          } else {
+            intakePivot.setPivotPower(Math.signum(error) * Math.abs(IntakeConstants.PIVOT_POWER));
+          }
 
-    return Commands.deadline(intakePivot.moveToInAngleCommand(), monitorWheelsByAngle)
-        .andThen(Commands.runOnce(() -> {
+          if (currentAngle >= IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_MIN_PIVOT_ANGLE_DEGREES) {
+            intakePivot.setWheelPower(IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_POWER);
+          } else {
+            intakePivot.stopWheels();
+          }
+        },
+        () -> {
+          intakePivot.stop();
           if (intakePivot.getPivotAngleDegrees() < IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_MIN_PIVOT_ANGLE_DEGREES) {
             intakePivot.stopWheels();
           }
-        }, intakePivot));
+        })
+        .until(() -> intakePivot.isNearAngle(targetAngle))
+        .withTimeout(2.5);
   }
 
   private void setShooterAlwaysOnEnabled(boolean enabled) {
