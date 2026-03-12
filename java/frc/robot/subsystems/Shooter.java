@@ -11,7 +11,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CalibrationConstants;
@@ -216,26 +215,13 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   }
 
   public Command runShooterPower(DoubleSupplier shooterPowerSupplier, DoubleSupplier intakePowerSupplier) {
-    final double[] startTimestamp = {-1.0};
     return runEnd(
         () -> {
-          if (startTimestamp[0] < 0.0) {
-            startTimestamp[0] = Timer.getFPGATimestamp();
-          }
-
           setShooterPower(shooterPowerSupplier.getAsDouble());
-
-          if (Timer.getFPGATimestamp() - startTimestamp[0]
-              >= ShooterConstants.SHOOTER_INTAKE_START_DELAY_SECONDS) {
-            setShooterIntakePower(intakePowerSupplier.getAsDouble());
-          } else {
-            shooterIntakeMotor.stopMotor();
-          }
+          // Run feed motor immediately for reliability during driver controls.
+          setShooterIntakePower(intakePowerSupplier.getAsDouble());
         },
-        () -> {
-          startTimestamp[0] = -1.0;
-          stop();
-        });
+        this::stop);
   }
 
   public Command runShooterPower() {
