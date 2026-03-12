@@ -376,6 +376,11 @@ public class RobotContainer {
             shooter.runShooterPower(ShooterConstants.SHOOTER_FIXED_POWER_DRIVER),
             runIntakeWheelsWithoutRequirements(IntakeConstants.WHEEL_POWER)));
 
+    // Driver one A: hold to reverse shooter intake feed motor (CAN 20) for jam clearing.
+    driverOne.a().whileTrue(Commands.runEnd(
+        () -> shooter.setShooterIntakePower(-ShooterConstants.SHOOTER_INTAKE_POWER),
+        () -> shooter.setShooterIntakePower(0.0),
+        shooter));
 
     // Driver one climb lineup test: hold X to center on climb tag and hold ~9ft distance.
     driverOne.x().whileTrue(drivebase.lineUpToTagAtDistance(

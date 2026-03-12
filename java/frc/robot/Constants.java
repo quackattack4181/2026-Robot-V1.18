@@ -35,8 +35,8 @@ public final class Constants
 
     // PathPlanner autonomous path-following PID values.
     // Keep these independent from teleop driver-feel tuning.
-    public static final PIDConstants PATH_TRANSLATION_PID = new PIDConstants(1.15, 0, 0.0);
-    public static final PIDConstants PATH_ANGLE_PID       = new PIDConstants(7.0, 0.0, 0.0);
+    public static final PIDConstants PATH_TRANSLATION_PID = new PIDConstants(0.7, 0, 0.0); // new PIDConstants(1.15, 0, 0.0);
+    public static final PIDConstants PATH_ANGLE_PID       = new PIDConstants(0.4, 0, 0.01); //new PIDConstants(7.0, 0.0, 0.0);
 
     // Legacy aliases kept for compatibility in existing references.
     public static final PIDConstants TRANSLATION_PID = PATH_TRANSLATION_PID;
@@ -217,7 +217,7 @@ public final class Constants
     public static final int AGITATOR_MOTOR_TWO_ID = 26;
     public static final boolean AGITATOR_MOTOR_ONE_INVERTED = false;
     public static final boolean AGITATOR_MOTOR_TWO_INVERTED = true;
-    public static final boolean AGITATOR_ENABLED = false;
+    public static final boolean AGITATOR_ENABLED = true;
     public static final double AGITATOR_POWER = 1.0;
 
     // OLD (currently unused): legacy intake PID/F placeholders for shooter feed motor.
