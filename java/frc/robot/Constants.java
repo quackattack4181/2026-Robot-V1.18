@@ -190,7 +190,7 @@ public final class Constants
     public static final int SPARKFLEX_CURRENT_LIMIT_AMPS = 80;
     public static final double SHOOTER_INTAKE_POWER = 0.99;
     public static final double SHOOTER_CAL_POINT_NEAR_DISTANCE_FEET = 6.15;
-    public static final double SHOOTER_CAL_POINT_NEAR_POWER = 0.495;
+    public static final double SHOOTER_CAL_POINT_NEAR_POWER = 0.48;
     public static final double SHOOTER_CAL_POINT_MID_DISTANCE_FEET = 7.75;
     public static final double SHOOTER_CAL_POINT_MID_POWER = 0.515;
     public static final double SHOOTER_CAL_POINT_FAR_DISTANCE_FEET = 8.34;
@@ -250,7 +250,7 @@ public final class Constants
 
     // Preset climber positions in offset-adjusted degrees.
     public static final double CLIMBER_DOWN_POSITION_DEGREES = -125.0;
-    public static final double CLIMBER_LEVEL_1_POSITION_DEGREES = 0.0;
+    public static final double CLIMBER_LEVEL_1_POSITION_DEGREES = 7.0;
     public static final double CLIMBER_LEVEL_2_POSITION_DEGREES = -27.8; 
     public static final double CLIMBER_POSITION_TOLERANCE_DEGREES = 1.0;
     public static final double CLIMBER_POSITION_KP = 0.03;

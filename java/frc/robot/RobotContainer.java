@@ -15,7 +15,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -134,9 +133,7 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     configureBindings();
-    SmartDashboard.putBoolean("Shooter Always On Enabled", shooterAlwaysOnEnabled);
-    SmartDashboard.putBoolean("Intake Wheels Always On Enabled", intakeWheelsAlwaysOnEnabled);
-
+        
     NetworkTable elasticTable = NetworkTableInstance.getDefault().getTable("Elastic");
     autoSelectedEntry = elasticTable.getEntry(AUTO_SELECTED_KEY);
     autoOptionsEntry = elasticTable.getEntry(AUTO_OPTIONS_KEY);
@@ -311,17 +308,14 @@ public class RobotContainer {
 
   private void setShooterAlwaysOnEnabled(boolean enabled) {
     shooterAlwaysOnEnabled = enabled;
-    SmartDashboard.putBoolean("Shooter Always On Enabled", shooterAlwaysOnEnabled);
-    SmartDashboard.putBoolean("Intake Wheels Always On Enabled", intakeWheelsAlwaysOnEnabled);
-    if (!shooterAlwaysOnEnabled) {
+            if (!shooterAlwaysOnEnabled) {
       shooter.stop();
     }
   }
 
   private void setIntakeWheelsAlwaysOnEnabled(boolean enabled) {
     intakeWheelsAlwaysOnEnabled = enabled;
-    SmartDashboard.putBoolean("Intake Wheels Always On Enabled", intakeWheelsAlwaysOnEnabled);
-    if (!intakeWheelsAlwaysOnEnabled) {
+        if (!intakeWheelsAlwaysOnEnabled) {
       intakePivot.stopWheels();
     }
   }
@@ -574,8 +568,7 @@ public class RobotContainer {
     autoOptionsEntry.setStringArray(optionNames);
     if (autoOptions.isEmpty()) {
       autoSelectedEntry.setString("");
-      SmartDashboard.putData("Auto Chooser", autoChooser);
-      return;
+            return;
     }
 
     String defaultSelection = optionNames[0];
@@ -585,8 +578,7 @@ public class RobotContainer {
         autoChooser.addOption(option, option);
       }
     }
-    SmartDashboard.putData("Auto Chooser", autoChooser);
-    autoSelectedEntry.setString(defaultSelection);
+        autoSelectedEntry.setString(defaultSelection);
   }
 
 
