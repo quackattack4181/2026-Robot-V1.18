@@ -85,7 +85,6 @@ public class RobotContainer {
   private final Climber climber = OperatorConstants.CLIMBER_ENABLED ? new Climber() : null;
   private boolean shooterAlwaysOnEnabled = ShooterConstants.SHOOTER_ALWAYS_ON_ENABLED;
   private boolean intakeWheelsAlwaysOnEnabled = IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_ENABLED;
-  private boolean intakeWheelsForcedOffByDriverTwo = false;
   private double teleopTranslationScale = CalibrationConstants.TELEOP_TRANSLATION_SCALE;
   private double teleopStrafeScale = CalibrationConstants.TELEOP_STRAFE_SCALE;
   private double teleopRotationScale = CalibrationConstants.TELEOP_ROTATION_SCALE;
@@ -327,13 +326,6 @@ public class RobotContainer {
     setIntakeWheelsAlwaysOnEnabled(nextEnabled);
   }
 
-  private void setIntakeWheelsForcedOffByDriverTwo(boolean forcedOff) {
-    intakeWheelsForcedOffByDriverTwo = forcedOff;
-    if (forcedOff) {
-      intakePivot.stopWheels();
-    }
-  }
-
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary predicate, or via the
@@ -419,8 +411,7 @@ public class RobotContainer {
 
     intakePivot.setDefaultCommand(intakePivot.run(() -> {
       intakePivot.stop();
-      if (!intakeWheelsForcedOffByDriverTwo
-          && intakeWheelsAlwaysOnEnabled
+      if (intakeWheelsAlwaysOnEnabled
           && intakePivot.getPivotAngleDegrees() >= IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_MIN_PIVOT_ANGLE_DEGREES) {
         intakePivot.setWheelPower(IntakeConstants.INTAKE_WHEELS_ALWAYS_ON_POWER);
       } else {
@@ -439,10 +430,8 @@ public class RobotContainer {
     // Driver two pivot agitation: hold Back to spin intake wheels and oscillate pivot +/-30 degrees.
     driverTwo.back().whileTrue(intakePivot.runPivotAgitation(30.0, IntakeConstants.WHEEL_POWER));
     driverTwo.start().whileTrue(intakePivot.holdAtAngleCommand(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE));
-    // Driver two A: while held, force intake wheels off (override always-on behavior).
-    driverTwo.a()
-        .onTrue(Commands.runOnce(() -> setIntakeWheelsForcedOffByDriverTwo(true)))
-        .onFalse(Commands.runOnce(() -> setIntakeWheelsForcedOffByDriverTwo(false)));
+    // Driver two A: while held, force only intake wheels off (no pivot movement).
+    driverTwo.a().whileTrue(intakePivot.run(() -> intakePivot.stopWheels()));
 
     if (OperatorConstants.CLIMBER_ENABLED && climber != null) {
       // Climber controls on driver two: bumpers for manual, B/X/Y for preset positions.
