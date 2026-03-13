@@ -189,12 +189,12 @@ public final class Constants
     public static final int CURRENT_LIMIT_AMPS = 40;
     public static final int SPARKFLEX_CURRENT_LIMIT_AMPS = 80;
     public static final double SHOOTER_INTAKE_POWER = 0.99;
-    public static final double SHOOTER_CAL_POINT_NEAR_DISTANCE_FEET = 6.15;
-    public static final double SHOOTER_CAL_POINT_NEAR_POWER = 0.48;
+    public static final double SHOOTER_CAL_POINT_NEAR_DISTANCE_FEET = 4.8;
+    public static final double SHOOTER_CAL_POINT_NEAR_POWER = 0.45;
     public static final double SHOOTER_CAL_POINT_MID_DISTANCE_FEET = 7.75;
-    public static final double SHOOTER_CAL_POINT_MID_POWER = 0.515;
-    public static final double SHOOTER_CAL_POINT_FAR_DISTANCE_FEET = 8.34;
-    public static final double SHOOTER_CAL_POINT_FAR_POWER = 0.545;
+    public static final double SHOOTER_CAL_POINT_MID_POWER = 0.54;
+    public static final double SHOOTER_CAL_POINT_FAR_DISTANCE_FEET = 9.0;
+    public static final double SHOOTER_CAL_POINT_FAR_POWER = 0.70;
     public static final double SHOOTER_POWER_NO_TAG_DEFAULT = 0.50;
     // Fixed shooter power modes for driver bumpers (independent of Limelight distance).
     public static final double SHOOTER_FIXED_POWER_DRIVER = 0.90;
