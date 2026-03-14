@@ -47,10 +47,22 @@ public class IntakePivot extends SubsystemBase implements AutoCloseable {
     double requestedPower = power;
     if (IntakeConstants.PIVOT_LIMITS_ENABLED) {
       double angle = getPivotAngleDegrees();
-      if (requestedPower > 0.0 && angle >= IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE) {
+      double inwardLimit = Math.min(IntakeConstants.PIVOT_MAX_INWARD_ANGLE, IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE);
+      double outwardLimit = Math.max(IntakeConstants.PIVOT_MAX_INWARD_ANGLE, IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE);
+
+      // Normal stop at configured limits.
+      if (requestedPower > 0.0 && angle >= outwardLimit) {
         requestedPower = 0.0;
       }
-      if (requestedPower < 0.0 && angle <= IntakeConstants.PIVOT_MAX_INWARD_ANGLE) {
+      if (requestedPower < 0.0 && angle <= inwardLimit) {
+        requestedPower = 0.0;
+      }
+
+      // If we are outside limits due to wrap/offset changes, only allow motion back into range.
+      if (angle < inwardLimit && requestedPower < 0.0) {
+        requestedPower = 0.0;
+      }
+      if (angle > outwardLimit && requestedPower > 0.0) {
         requestedPower = 0.0;
       }
     }
@@ -62,7 +74,7 @@ public class IntakePivot extends SubsystemBase implements AutoCloseable {
   }
 
   public Command runPivotPower(double power) {
-    return startEnd(() -> setPivotPower(power), this::stop);
+    return runEnd(() -> setPivotPower(power), this::stop);
   }
 
   private double wrapToSignedDegrees(double degrees) {
@@ -71,12 +83,30 @@ public class IntakePivot extends SubsystemBase implements AutoCloseable {
 
   public double getPivotAngleDegrees() {
     double absoluteDegrees = pivotEncoder.get() * 360.0;
-    // Flip sign convention so outward is positive and inward is negative.
-    return -wrapToSignedDegrees(absoluteDegrees - IntakeConstants.PIVOT_ABSOLUTE_ENCODER_OFFSET_DEGREES);
+    double angle = wrapToSignedDegrees(absoluteDegrees - IntakeConstants.PIVOT_ABSOLUTE_ENCODER_OFFSET_DEGREES);
+    return IntakeConstants.PIVOT_ENCODER_DIRECTION_INVERTED ? -angle : angle;
   }
 
   private double shortestSignedErrorDegrees(double currentDegrees, double targetDegrees) {
     return wrapToSignedDegrees(targetDegrees - currentDegrees);
+  }
+
+  private Command moveToAngleCommand(double targetDegrees) {
+    return runEnd(
+        () -> {
+          double error = shortestSignedErrorDegrees(getPivotAngleDegrees(), targetDegrees);
+          if (Math.abs(error) <= IntakeConstants.PIVOT_ANGLE_TOLERANCE_DEGREES) {
+            stop();
+            return;
+          }
+
+          double direction = Math.signum(error);
+          setPivotPower(direction * Math.abs(IntakeConstants.PIVOT_POWER));
+        },
+        this::stop)
+        .until(() -> isNearAngle(targetDegrees))
+        .withTimeout(2.5)
+        .andThen(runOnce(this::stop));
   }
 
   public Command runPivotClockwiseToAngle(double targetDegrees) {
@@ -113,17 +143,26 @@ public class IntakePivot extends SubsystemBase implements AutoCloseable {
   }
 
   public Command moveToOutAngleCommand() {
-    return runPivotCounterClockwiseToAngle(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE)
-        .until(() -> isNearAngle(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE))
-        .withTimeout(2.5)
-        .andThen(runOnce(this::stop));
+    return moveToAngleCommand(IntakeConstants.PIVOT_MAX_OUTWARD_ANGLE);
   }
 
   public Command moveToInAngleCommand() {
-    return runPivotClockwiseToAngle(IntakeConstants.PIVOT_MAX_INWARD_ANGLE)
-        .until(() -> isNearAngle(IntakeConstants.PIVOT_MAX_INWARD_ANGLE))
-        .withTimeout(2.5)
-        .andThen(runOnce(this::stop));
+    return moveToAngleCommand(IntakeConstants.PIVOT_MAX_INWARD_ANGLE);
+  }
+
+  public Command holdAtAngleCommand(double targetDegrees) {
+    return runEnd(
+        () -> {
+          double error = shortestSignedErrorDegrees(getPivotAngleDegrees(), targetDegrees);
+          if (Math.abs(error) <= IntakeConstants.PIVOT_ANGLE_TOLERANCE_DEGREES) {
+            stop();
+            return;
+          }
+
+          double direction = Math.signum(error);
+          setPivotPower(direction * Math.abs(IntakeConstants.PIVOT_POWER));
+        },
+        this::stop);
   }
 
   public Command stopWheelsCommand() {

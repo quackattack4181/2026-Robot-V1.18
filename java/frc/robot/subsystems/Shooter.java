@@ -11,24 +11,31 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.CalibrationConstants;
 import frc.robot.Constants.ShooterConstants;
 import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase implements AutoCloseable {
   private final SparkFlex middleShooterMotor;
+  private final SparkFlex secondShooterMotor;
   private final SparkMax shooterIntakeMotor;
   private final SparkMax agitatorMotorOne;
   private final SparkMax agitatorMotorTwo;
   private final NetworkTableEntry shooterCalibrationPowerEntry;
+  private double shooterPidKp = CalibrationConstants.SHOOTER_KP;
+  private double shooterPidKi = CalibrationConstants.SHOOTER_KI;
+  private double shooterPidKd = CalibrationConstants.SHOOTER_KD;
+  private double shooterPidKf = CalibrationConstants.SHOOTER_KF;
+  private boolean robotCalibrationModeEnabled = CalibrationConstants.ROBOT_CALIBRATION_MODE_ENABLED;
 
   private double currentShooterPower = 0.0;
 
   public Shooter() {
     shooterIntakeMotor = new SparkMax(ShooterConstants.SHOOTER_INTAKE_MOTOR_ID, MotorType.kBrushless);
     middleShooterMotor = new SparkFlex(ShooterConstants.MIDDLE_SHOOTER_MOTOR_ID, MotorType.kBrushless);
+    secondShooterMotor = new SparkFlex(ShooterConstants.SECOND_SHOOTER_MOTOR_ID, MotorType.kBrushless);
     agitatorMotorOne = new SparkMax(ShooterConstants.AGITATOR_MOTOR_ONE_ID, MotorType.kBrushless);
     agitatorMotorTwo = new SparkMax(ShooterConstants.AGITATOR_MOTOR_TWO_ID, MotorType.kBrushless);
     shooterCalibrationPowerEntry = NetworkTableInstance.getDefault()
@@ -48,6 +55,12 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
     middleConfig.inverted(ShooterConstants.MIDDLE_SHOOTER_INVERTED);
     middleShooterMotor.configure(middleConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+    SparkFlexConfig secondConfig = new SparkFlexConfig();
+    secondConfig.idleMode(IdleMode.kCoast);
+    secondConfig.smartCurrentLimit(ShooterConstants.SPARKFLEX_CURRENT_LIMIT_AMPS);
+    secondConfig.inverted(ShooterConstants.SECOND_SHOOTER_INVERTED);
+    secondShooterMotor.configure(secondConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
     SparkMaxConfig agitatorOneConfig = new SparkMaxConfig();
     agitatorOneConfig.idleMode(IdleMode.kCoast);
     agitatorOneConfig.smartCurrentLimit(ShooterConstants.CURRENT_LIMIT_AMPS);
@@ -65,20 +78,37 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   public void stop() {
     shooterIntakeMotor.stopMotor();
     middleShooterMotor.stopMotor();
+    secondShooterMotor.stopMotor();
     agitatorMotorOne.stopMotor();
     agitatorMotorTwo.stopMotor();
     currentShooterPower = 0.0;
   }
 
   public void setShooterPower(double power) {
-    currentShooterPower = MathUtil.clamp(power, -1.0, 1.0);
+    double requestedPower = Double.isFinite(power)
+        ? power
+        : ShooterConstants.SHOOTER_POWER_NO_TAG_DEFAULT;
+    currentShooterPower = MathUtil.clamp(requestedPower, -1.0, 1.0);
     middleShooterMotor.set(currentShooterPower);
+    secondShooterMotor.set(currentShooterPower);
 
     if (Math.abs(currentShooterPower) > 1e-3) {
       setAgitatorPower(ShooterConstants.AGITATOR_POWER);
     } else {
       setAgitatorPower(0.0);
     }
+  }
+
+  public void setFlywheelOnlyPower(double power) {
+    double requestedPower = Double.isFinite(power)
+        ? power
+        : ShooterConstants.SHOOTER_POWER_NO_TAG_DEFAULT;
+    currentShooterPower = MathUtil.clamp(requestedPower, -1.0, 1.0);
+    middleShooterMotor.set(currentShooterPower);
+    secondShooterMotor.set(currentShooterPower);
+    // Keep feeder/agitator off in always-on flywheel mode.
+    shooterIntakeMotor.stopMotor();
+    setAgitatorPower(0.0);
   }
 
   public void setShooterIntakePower(double power) {
@@ -106,8 +136,35 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
         <= ShooterConstants.SHOOTER_POWER_TOLERANCE;
   }
 
+
+  public void setRobotCalibrationModeEnabled(boolean enabled) {
+    robotCalibrationModeEnabled = enabled;
+  }
+
+  public void setShooterPidConstants(double kp, double ki, double kd, double kf) {
+    shooterPidKp = kp;
+    shooterPidKi = ki;
+    shooterPidKd = kd;
+    shooterPidKf = kf;
+  }
+
+  public double getShooterPidKp() {
+    return shooterPidKp;
+  }
+
+  public double getShooterPidKi() {
+    return shooterPidKi;
+  }
+
+  public double getShooterPidKd() {
+    return shooterPidKd;
+  }
+
+  public double getShooterPidKf() {
+    return shooterPidKf;
+  }
   public double getTargetPowerForDistanceInches(double distanceInches) {
-    if (ShooterConstants.SHOOTER_CALIBRATION_MODE_ENABLED) {
+    if (robotCalibrationModeEnabled) {
       return MathUtil.clamp(
           shooterCalibrationPowerEntry.getDouble(ShooterConstants.SHOOTER_CALIBRATION_DEFAULT_POWER),
           -1.0,
@@ -120,13 +177,13 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
 
     double distanceFeet = distanceInches / 12.0;
 
-    double x0 = 3.0;
-    double x1 = 6.0;
-    double x2 = 9.0;
+    double x0 = ShooterConstants.SHOOTER_CAL_POINT_NEAR_DISTANCE_FEET;
+    double x1 = ShooterConstants.SHOOTER_CAL_POINT_MID_DISTANCE_FEET;
+    double x2 = ShooterConstants.SHOOTER_CAL_POINT_FAR_DISTANCE_FEET;
 
-    double p0 = ShooterConstants.SHOOTER_POWER_AT_3FT;
-    double p1 = ShooterConstants.SHOOTER_POWER_AT_6FT;
-    double p2 = ShooterConstants.SHOOTER_POWER_AT_9FT;
+    double p0 = ShooterConstants.SHOOTER_CAL_POINT_NEAR_POWER;
+    double p1 = ShooterConstants.SHOOTER_CAL_POINT_MID_POWER;
+    double p2 = ShooterConstants.SHOOTER_CAL_POINT_FAR_POWER;
 
     if (distanceFeet <= x0) {
       return MathUtil.clamp(p0, -1.0, 1.0);
@@ -158,26 +215,13 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   }
 
   public Command runShooterPower(DoubleSupplier shooterPowerSupplier, DoubleSupplier intakePowerSupplier) {
-    final double[] startTimestamp = {-1.0};
     return runEnd(
         () -> {
-          if (startTimestamp[0] < 0.0) {
-            startTimestamp[0] = Timer.getFPGATimestamp();
-          }
-
           setShooterPower(shooterPowerSupplier.getAsDouble());
-
-          if (Timer.getFPGATimestamp() - startTimestamp[0]
-              >= ShooterConstants.SHOOTER_INTAKE_START_DELAY_SECONDS) {
-            setShooterIntakePower(intakePowerSupplier.getAsDouble());
-          } else {
-            shooterIntakeMotor.stopMotor();
-          }
+          // Run feed motor immediately for reliability during driver controls.
+          setShooterIntakePower(intakePowerSupplier.getAsDouble());
         },
-        () -> {
-          startTimestamp[0] = -1.0;
-          stop();
-        });
+        this::stop);
   }
 
   public Command runShooterPower() {
@@ -202,6 +246,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   public void close() {
     shooterIntakeMotor.close();
     middleShooterMotor.close();
+    secondShooterMotor.close();
     agitatorMotorOne.close();
     agitatorMotorTwo.close();
   }

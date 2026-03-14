@@ -6,6 +6,9 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -15,6 +18,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   private final SparkFlex leftClimberMotor;
   private final SparkFlex rightClimberMotor;
   private final DutyCycleEncoder absoluteEncoder;
+  private final NetworkTableEntry climberAngleDegreesEntry =
+      NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Climber Angle (deg)");
 
   public Climber() {
     leftClimberMotor = new SparkFlex(ClimberConstants.LEFT_CLIMBER_MOTOR_ID, MotorType.kBrushless);
@@ -38,12 +43,28 @@ public class Climber extends SubsystemBase implements AutoCloseable {
     double clampedPower = Math.max(-ClimberConstants.MAX_ALLOWED_POWER,
         Math.min(ClimberConstants.MAX_ALLOWED_POWER, power));
 
-    double currentAngle = getClimberAngleDegrees();
-    if (clampedPower > 0.0 && currentAngle >= ClimberConstants.MAX_FORWARD_ANGLE_DEGREES) {
-      clampedPower = 0.0;
-    }
-    if (clampedPower < 0.0 && currentAngle <= ClimberConstants.MAX_BACKWARD_ANGLE_DEGREES) {
-      clampedPower = 0.0;
+    if (ClimberConstants.CLIMBER_LIMITS_ENABLED) {
+      double currentAngle = getClimberAngleDegrees();
+      double backwardLimit = Math.min(ClimberConstants.BACKWARD_MAX_ANGLE_DEGREES,
+          ClimberConstants.FORWARD_MAX_ANGLE_DEGREES);
+      double forwardLimit = Math.max(ClimberConstants.BACKWARD_MAX_ANGLE_DEGREES,
+          ClimberConstants.FORWARD_MAX_ANGLE_DEGREES);
+
+      // Normal stop at configured limits.
+      if (clampedPower > 0.0 && currentAngle >= forwardLimit) {
+        clampedPower = 0.0;
+      }
+      if (clampedPower < 0.0 && currentAngle <= backwardLimit) {
+        clampedPower = 0.0;
+      }
+
+      // If outside limits, only allow motion back into range.
+      if (currentAngle < backwardLimit && clampedPower < 0.0) {
+        clampedPower = 0.0;
+      }
+      if (currentAngle > forwardLimit && clampedPower > 0.0) {
+        clampedPower = 0.0;
+      }
     }
 
     leftClimberMotor.set(clampedPower);
@@ -56,7 +77,8 @@ public class Climber extends SubsystemBase implements AutoCloseable {
 
   public double getClimberAngleDegrees() {
     double absoluteDegrees = absoluteEncoder.get() * 360.0;
-    return wrapToSignedDegrees(absoluteDegrees - ClimberConstants.CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES);
+    double angle = wrapToSignedDegrees(absoluteDegrees - ClimberConstants.CLIMBER_ABSOLUTE_ENCODER_OFFSET_DEGREES);
+    return ClimberConstants.CLIMBER_ENCODER_DIRECTION_INVERTED ? -angle : angle;
   }
 
   public void stop() {
@@ -65,7 +87,39 @@ public class Climber extends SubsystemBase implements AutoCloseable {
   }
 
   public Command runClimberPower(double power) {
-    return startEnd(() -> setClimberPower(power), this::stop);
+    return runEnd(() -> setClimberPower(power), this::stop);
+  }
+
+  public Command moveToAngleCommand(double targetAngleDegrees) {
+    return run(() -> {
+      double errorDegrees = targetAngleDegrees - getClimberAngleDegrees();
+      double power = MathUtil.clamp(errorDegrees * ClimberConstants.CLIMBER_POSITION_KP,
+                                    -ClimberConstants.CLIMBER_POWER,
+                                    ClimberConstants.CLIMBER_POWER);
+      setClimberPower(power);
+    })
+        .until(() -> Math.abs(targetAngleDegrees - getClimberAngleDegrees())
+            <= ClimberConstants.CLIMBER_POSITION_TOLERANCE_DEGREES)
+        .withTimeout(ClimberConstants.CLIMBER_POSITION_TIMEOUT_SECONDS)
+        .finallyDo(this::stop);
+  }
+
+  public Command moveToDownPositionCommand() {
+    return moveToAngleCommand(ClimberConstants.CLIMBER_DOWN_POSITION_DEGREES);
+  }
+
+  public Command moveToLevel1PositionCommand() {
+    return moveToAngleCommand(ClimberConstants.CLIMBER_LEVEL_1_POSITION_DEGREES);
+  }
+
+  public Command moveToLevel2PositionCommand() {
+    return moveToAngleCommand(ClimberConstants.CLIMBER_LEVEL_2_POSITION_DEGREES);
+  }
+
+  @Override
+  public void periodic() {
+    // Publish adjusted climber angle (includes configured offset and optional inversion).
+    climberAngleDegreesEntry.setDouble(getClimberAngleDegrees());
   }
 
   @Override

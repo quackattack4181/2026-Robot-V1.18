@@ -4,11 +4,16 @@
 
 package frc.robot;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 // import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 // import limelight.networktables.LimelightResults;
 // import limelight.networktables.target.pipeline.NeuralClassifier;
 
@@ -26,6 +31,12 @@ public class Robot extends TimedRobot
   public RobotContainer m_robotContainer;
 
   private Timer disabledTimer;
+  private final NetworkTableEntry matchTimeEntry = NetworkTableInstance.getDefault()
+      .getTable("Elastic").getEntry("Match Time (s)");
+  private final NetworkTableEntry gameDataEntry = NetworkTableInstance.getDefault()
+      .getTable("Elastic").getEntry("Game Specific Message");
+  private final NetworkTableEntry hubShiftTimeEntry = NetworkTableInstance.getDefault()
+      .getTable("Elastic").getEntry("Hub Shift Time (s)");
 
   public Robot()
   {
@@ -68,6 +79,15 @@ public class Robot extends TimedRobot
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     // SmartDashboard.putNumber("Front Left Module", swervelib.SwerveDrive.getModulePositions()[0].angle.getDegrees());
+
+    double matchTimeSeconds = DriverStation.getMatchTime();
+    if (matchTimeSeconds >= 0.0) {
+      matchTimeEntry.setDouble(matchTimeSeconds);
+    }
+    String gameSpecificMessage = DriverStation.getGameSpecificMessage();
+    gameDataEntry.setString(gameSpecificMessage);
+    hubShiftTimeEntry.setDouble(parseHubShiftTimeSeconds(gameSpecificMessage));
+    m_robotContainer.updateCalibrationFromDashboard();
 
     // Robot.getInstance().m_robotContainer.LimeLightSystem.update();
     // Robot.getInstance().m_robotContainer.SecondHead.update();
@@ -119,20 +139,34 @@ public class Robot extends TimedRobot
   {
   }
 
+
+  private double parseHubShiftTimeSeconds(String gameData)
+  {
+    if (gameData == null || gameData.isBlank())
+    {
+      return -1.0;
+    }
+
+    Matcher matcher = Pattern.compile("(-?\\d+(?:\\.\\d+)?)").matcher(gameData);
+    if (matcher.find())
+    {
+      try
+      {
+        return Double.parseDouble(matcher.group(1));
+      } catch (NumberFormatException ignored)
+      {
+        return -1.0;
+      }
+    }
+
+    return -1.0;
+  }
+
   @Override
   public void teleopInit()
   {
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
-    if (m_autonomousCommand != null)
-    {
-      m_autonomousCommand.cancel();
-    } else
-    {
-      CommandScheduler.getInstance().cancelAll();
-    }
+    // This makes sure that autonomous commands stop when teleop starts.
+    CommandScheduler.getInstance().cancelAll();
     m_robotContainer.setDriveMode();
     m_robotContainer.setMotorBrake(true);
   }

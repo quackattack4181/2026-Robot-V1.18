@@ -57,6 +57,7 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 public class SwerveSubsystem extends SubsystemBase
 {
+  private static final LimelightHelpers.RawFiducial[] EMPTY_FIDUCIALS = new LimelightHelpers.RawFiducial[0];
 
   /**
    * PhotonVision class to keep an accurate odometry.
@@ -73,9 +74,12 @@ public class SwerveSubsystem extends SubsystemBase
   /**
    * Limelight aim controller reused to avoid resource warnings.
    */
-  private final PIDController limelightAimController = new PIDController(Constants.VisionConstants.AIM_KP,
-                                                                         Constants.VisionConstants.AIM_KI,
-                                                                         Constants.VisionConstants.AIM_KD);
+  private final PIDController limelightAimController = new PIDController(Constants.CalibrationConstants.SWERVE_AIM_KP,
+                                                                         Constants.CalibrationConstants.SWERVE_AIM_KI,
+                                                                         Constants.CalibrationConstants.SWERVE_AIM_KD);
+  private final PIDController headingController = new PIDController(Constants.CalibrationConstants.SWERVE_HEADING_KP,
+                                                                    Constants.CalibrationConstants.SWERVE_HEADING_KI,
+                                                                    Constants.CalibrationConstants.SWERVE_HEADING_KD);
   /**
    * Enable vision odometry updates while driving.
    */
@@ -90,6 +94,12 @@ public class SwerveSubsystem extends SubsystemBase
    */
   private final NetworkTableEntry limelightDistanceFeetEntry =
       NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Limelight Distance (ft)");
+  private final NetworkTableEntry robotPoseXEntry =
+      NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Robot Pose X (m)");
+  private final NetworkTableEntry robotPoseYEntry =
+      NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Robot Pose Y (m)");
+  private final NetworkTableEntry robotPoseHeadingEntry =
+      NetworkTableInstance.getDefault().getTable("Elastic").getEntry("Robot Pose Heading (deg)");
   /**
    * Last valid Limelight distance to avoid publishing NaN and blanking dashboard widgets.
    */
@@ -143,6 +153,8 @@ public class SwerveSubsystem extends SubsystemBase
     }
     setupPathPlanner();
     limelightAimController.setTolerance(Constants.VisionConstants.AIM_TOLERANCE_DEGREES);
+    headingController.enableContinuousInput(-180.0, 180.0);
+    headingController.setTolerance(2.0);
     LimelightHelpers.SetFiducialIDFiltersOverride(Constants.VisionConstants.LIMELIGHT_NAME,
                                                   Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
   }
@@ -158,6 +170,8 @@ public class SwerveSubsystem extends SubsystemBase
     // swerveDrive = new SwerveDrive(driveCfg, controllerCfg, Constants.MAX_SPEED);
     swerveDrive = new SwerveDrive(driveCfg, controllerCfg, Constants.MAX_SPEED, null); // *HERE*
     limelightAimController.setTolerance(Constants.VisionConstants.AIM_TOLERANCE_DEGREES);
+    headingController.enableContinuousInput(-180.0, 180.0);
+    headingController.setTolerance(2.0);
     LimelightHelpers.SetFiducialIDFiltersOverride(Constants.VisionConstants.LIMELIGHT_NAME,
                                                   Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
   }
@@ -170,6 +184,16 @@ public class SwerveSubsystem extends SubsystemBase
     // vision = new Vision(swerveDrive::getPose, swerveDrive.field);
   }
 
+
+  public void setHeadingPid(double kp, double ki, double kd)
+  {
+    headingController.setPID(kp, ki, kd);
+  }
+
+  public void setLimelightAimPid(double kp, double ki, double kd)
+  {
+    limelightAimController.setPID(kp, ki, kd);
+  }
   @Override
   public void periodic()
   {
@@ -187,6 +211,11 @@ public class SwerveSubsystem extends SubsystemBase
 
     limelightDistanceInchesEntry.setDouble(lastValidLimelightDistanceInches);
     limelightDistanceFeetEntry.setDouble(lastValidLimelightDistanceInches / 12.0);
+
+    Pose2d pose = getPose();
+    robotPoseXEntry.setDouble(pose.getX());
+    robotPoseYEntry.setDouble(pose.getY());
+    robotPoseHeadingEntry.setDouble(pose.getRotation().getDegrees());
   }
 
   @Override
@@ -213,10 +242,10 @@ public class SwerveSubsystem extends SubsystemBase
         this::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
         (speeds, feedforwards) -> drive(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
         new PPHolonomicDriveController( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-                                         AutonConstants.TRANSLATION_PID,
-                                         // Translation PID constants
-                                         AutonConstants.ANGLE_PID,
-                                         // Rotation PID constants
+                                         AutonConstants.PATH_TRANSLATION_PID,
+                                         // Autonomous path translation PID constants
+                                         AutonConstants.PATH_ANGLE_PID,
+                                         // Autonomous path rotation PID constants
                                          4.5
         ), config,
         () -> {
@@ -287,6 +316,19 @@ public class SwerveSubsystem extends SubsystemBase
   {
     // Create a path following command using AutoBuilder. This will also trigger event markers.
     return new PathPlannerAuto(pathName);
+  }
+
+
+  public Command driveToPoseWhenTagSeen(Pose2d targetPose, String limelightName, int[] requiredTagIds,
+                                         double tagAcquireTimeoutSeconds, double driveTimeoutSeconds)
+  {
+    Command waitForTag = Commands.waitUntil(() -> hasAnyLimelightTargetFromList(limelightName, requiredTagIds))
+                                 .withTimeout(tagAcquireTimeoutSeconds);
+
+    return Commands.sequence(
+        waitForTag,
+        driveToPose(targetPose).withTimeout(driveTimeoutSeconds),
+        Commands.runOnce(this::lock));
   }
 
   /**
@@ -415,6 +457,21 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
+   * Drive straight backward in robot-relative X for a fixed duration.
+   *
+   * @param speedMetersPerSecond backup speed magnitude (m/s).
+   * @param durationSeconds duration to drive backward (seconds).
+   * @return command that drives backward then stops.
+   */
+  public Command driveBackwardRobotRelativeCommand(double speedMetersPerSecond, double durationSeconds)
+  {
+    double backupSpeed = -Math.abs(speedMetersPerSecond);
+    return Commands.run(() -> drive(new Translation2d(backupSpeed, 0.0), 0.0, false), this)
+                   .withTimeout(durationSeconds)
+                   .finallyDo(() -> drive(new Translation2d(0.0, 0.0), 0.0, false));
+  }
+
+  /**
    * Sets the maximum speed of the swerve drive.
    *
    * @param maximumSpeedInMetersPerSecond the maximum speed to set for the swerve drive in meters per second
@@ -458,9 +515,9 @@ public class SwerveSubsystem extends SubsystemBase
     });
   }
 
-  private boolean isAllowedAimTagId(int tagId)
+  private boolean isTagInList(int tagId, int[] allowedIds)
   {
-    for (int allowedId : Constants.VisionConstants.ALLOWED_AIM_TAG_IDS)
+    for (int allowedId : allowedIds)
     {
       if (allowedId == tagId)
       {
@@ -470,83 +527,203 @@ public class SwerveSubsystem extends SubsystemBase
     return false;
   }
 
-  private boolean isDirectAimTagId(int tagId)
+  private boolean isAllowedAimTagId(int tagId)
   {
-    for (int directId : Constants.VisionConstants.DIRECT_AIM_TAG_IDS)
-    {
-      if (directId == tagId)
-      {
-        return true;
-      }
-    }
-    return false;
+    return isTagInList(tagId, Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
   }
 
-  private boolean isCenterAimTagId(int tagId)
+  private LimelightHelpers.RawFiducial[] getSafeRawFiducials(String limelightName)
   {
-    for (int centerId : Constants.VisionConstants.CENTER_AIM_TAG_IDS)
-    {
-      if (centerId == tagId)
-      {
-        return true;
-      }
-    }
-    return false;
+    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    return fiducials != null ? fiducials : EMPTY_FIDUCIALS;
   }
 
-  private boolean hasAllowedLimelightTarget(String limelightName)
+  public boolean isNearLimelightSnapshot(String limelightName,
+                                        int[] allowedTagIds,
+                                        double targetTx,
+                                        double targetTy,
+                                        double targetTa,
+                                        double txTolerance,
+                                        double tyTolerance,
+                                        double taTolerance)
+  {
+    if (!hasAnyLimelightTargetFromList(limelightName, allowedTagIds))
+    {
+      return false;
+    }
+
+    return Math.abs(LimelightHelpers.getTX(limelightName) - targetTx) <= txTolerance
+           && Math.abs(LimelightHelpers.getTY(limelightName) - targetTy) <= tyTolerance
+           && Math.abs(LimelightHelpers.getTA(limelightName) - targetTa) <= taTolerance;
+  }
+
+  public Command rotateByDegreesCommand(double deltaDegrees, double timeoutSeconds)
+  {
+    return Commands.defer(
+        () -> {
+          double targetHeading = MathUtil.inputModulus(getHeading().getDegrees() + deltaDegrees, -180.0, 180.0);
+          return run(() -> {
+            double omega = headingController.calculate(getHeading().getDegrees(), targetHeading);
+            omega = MathUtil.clamp(omega, -2.5, 2.5);
+            drive(new Translation2d(0.0, 0.0), omega, true);
+          })
+              .until(() -> Math.abs(MathUtil.inputModulus(targetHeading - getHeading().getDegrees(), -180.0, 180.0))
+                  <= 2.0)
+              .withTimeout(timeoutSeconds)
+              .andThen(Commands.runOnce(this::lock));
+        },
+        java.util.Set.of(this));
+  }
+
+  public boolean hasAnyLimelightTargetFromList(String limelightName, int[] allowedTagIds)
   {
     if (!LimelightHelpers.getTV(limelightName))
     {
       return false;
     }
 
-    int tagId = (int) Math.round(LimelightHelpers.getFiducialID(limelightName));
-    return isAllowedAimTagId(tagId);
+    LimelightHelpers.RawFiducial[] fiducials = getSafeRawFiducials(limelightName);
+    for (LimelightHelpers.RawFiducial fiducial : fiducials)
+    {
+      if (isTagInList(fiducial.id, allowedTagIds))
+      {
+        return true;
+      }
+    }
+
+    int primaryId = (int) Math.round(LimelightHelpers.getFiducialID(limelightName));
+    return isTagInList(primaryId, allowedTagIds);
+  }
+
+  private boolean hasAllowedLimelightTarget(String limelightName)
+  {
+    return hasAnyLimelightTargetFromList(limelightName, Constants.VisionConstants.ALLOWED_AIM_TAG_IDS);
   }
 
   private double getAverageTxForAllowedTags(String limelightName)
   {
-    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    if (!hasAllowedLimelightTarget(limelightName))
+    {
+      return Double.NaN;
+    }
 
-    double centerTxSum = 0.0;
-    int centerCount = 0;
-    double directTxSum = 0.0;
-    int directCount = 0;
+    LimelightHelpers.RawFiducial[] fiducials = getSafeRawFiducials(limelightName);
+
+    double txSum = 0.0;
+    int count = 0;
 
     for (LimelightHelpers.RawFiducial fiducial : fiducials)
     {
-      if (isCenterAimTagId(fiducial.id))
+      if (isAllowedAimTagId(fiducial.id))
       {
-        centerTxSum += fiducial.txnc;
-        centerCount++;
-      }
-      else if (isDirectAimTagId(fiducial.id))
-      {
-        directTxSum += fiducial.txnc;
-        directCount++;
+        txSum += fiducial.txnc;
+        count++;
       }
     }
 
-    // If 2+ center tags are visible, aim at the center between them.
-    if (centerCount >= 2)
+    // Aim at the center average of ALL visible approved shooting tags.
+    if (count > 0)
     {
-      return centerTxSum / centerCount;
+      return txSum / count;
     }
 
-    // Otherwise, prioritize aiming directly at tag 26/10 when visible.
-    if (directCount > 0)
+    return LimelightHelpers.getTX(limelightName);
+  }
+
+  private double getAverageTxForTagList(String limelightName, int[] allowedTagIds)
+  {
+    if (!hasAnyLimelightTargetFromList(limelightName, allowedTagIds))
     {
-      return directTxSum / directCount;
+      return Double.NaN;
     }
 
-    // With only one center-list tag, still aim directly at that tag.
-    if (centerCount == 1)
+    LimelightHelpers.RawFiducial[] fiducials = getSafeRawFiducials(limelightName);
+    double txSum = 0.0;
+    int count = 0;
+
+    for (LimelightHelpers.RawFiducial fiducial : fiducials)
     {
-      return centerTxSum;
+      if (isTagInList(fiducial.id, allowedTagIds))
+      {
+        txSum += fiducial.txnc;
+        count++;
+      }
     }
 
-    return hasAllowedLimelightTarget(limelightName) ? LimelightHelpers.getTX(limelightName) : Double.NaN;
+    return count > 0 ? txSum / count : LimelightHelpers.getTX(limelightName);
+  }
+
+  public Command lineUpToTagAtDistance(String limelightName,
+                                       int[] allowedTagIds,
+                                       double targetDistanceFeet,
+                                       double lateralOffsetInches)
+  {
+    double targetDistanceMeters = Units.feetToMeters(targetDistanceFeet);
+    double targetTxDegrees = -Units.radiansToDegrees(
+        Math.atan2(Units.inchesToMeters(lateralOffsetInches), targetDistanceMeters));
+
+    return run(() -> {
+      double forwardMps = 0.0;
+      double strafeMps = 0.0;
+
+      double omega = headingController.calculate(getHeading().getDegrees(),
+                                                 Constants.ClimbSetupConstants.TARGET_HEADING_DEGREES);
+      omega = MathUtil.clamp(omega,
+                             -Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC,
+                             Constants.VisionConstants.AIM_MAX_ANGULAR_VELOCITY_RAD_PER_SEC);
+
+      double headingError = Math.abs(MathUtil.inputModulus(
+          Constants.ClimbSetupConstants.TARGET_HEADING_DEGREES - getHeading().getDegrees(),
+          -180.0,
+          180.0));
+
+      // Rotate to the requested heading first, then do translation-only tag centering.
+      if (headingError <= Constants.ClimbSetupConstants.TAG_LINEUP_HEADING_TOLERANCE_DEGREES
+          && hasAnyLimelightTargetFromList(limelightName, allowedTagIds))
+      {
+        double tx = getAverageTxForTagList(limelightName, allowedTagIds);
+        if (!Double.isFinite(tx))
+        {
+          tx = 0.0;
+        }
+
+        // Keep the robot pointed straight and recenter on tag by strafing, not rotating.
+        double txError = tx - targetTxDegrees;
+        if (Math.abs(txError) > Constants.ClimbSetupConstants.LIMELIGHT_TX_TOLERANCE_DEGREES)
+        {
+          strafeMps = MathUtil.clamp(-txError * Constants.ClimbSetupConstants.TAG_LINEUP_STRAFE_KP,
+                                     -Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS,
+                                     Constants.ClimbSetupConstants.TAG_LINEUP_MAX_STRAFE_MPS);
+
+          if (Math.abs(strafeMps) < Constants.ClimbSetupConstants.TAG_LINEUP_MIN_STRAFE_MPS)
+          {
+            strafeMps = Math.copySign(Constants.ClimbSetupConstants.TAG_LINEUP_MIN_STRAFE_MPS, strafeMps);
+          }
+        }
+
+        double distanceMeters = getLimelightTargetDistanceMeters(limelightName);
+        if (Double.isFinite(distanceMeters))
+        {
+          double distanceErrorMeters = distanceMeters - targetDistanceMeters;
+          double distanceToleranceMeters = Units.inchesToMeters(
+              Constants.ClimbSetupConstants.TAG_LINEUP_DISTANCE_TOLERANCE_INCHES);
+
+          if (Math.abs(distanceErrorMeters) > distanceToleranceMeters)
+          {
+            forwardMps = MathUtil.clamp(distanceErrorMeters * Constants.ClimbSetupConstants.TAG_LINEUP_DISTANCE_KP,
+                                        -Constants.ClimbSetupConstants.TAG_LINEUP_MAX_FORWARD_MPS,
+                                        Constants.ClimbSetupConstants.TAG_LINEUP_MAX_FORWARD_MPS);
+          }
+        }
+      }
+
+      drive(new Translation2d(forwardMps, strafeMps), omega, false);
+    }).finallyDo(() -> drive(new Translation2d(0.0, 0.0), 0.0, false));
+  }
+
+  public Command lineUpToTagAtDistance(String limelightName, int[] allowedTagIds, double targetDistanceFeet)
+  {
+    return lineUpToTagAtDistance(limelightName, allowedTagIds, targetDistanceFeet, 0.0);
   }
 
   /**
@@ -686,6 +863,16 @@ public class SwerveSubsystem extends SubsystemBase
     return swerveDrive.getPose();
   }
 
+  public boolean isNearPose(Pose2d targetPose, double positionToleranceMeters, double headingToleranceDegrees)
+  {
+    Pose2d currentPose = getPose();
+    double positionErrorMeters = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+    double headingErrorDegrees = Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees());
+
+    return positionErrorMeters <= positionToleranceMeters
+           && headingErrorDegrees <= headingToleranceDegrees;
+  }
+
   /**
    * Set chassis speeds with closed-loop velocity control.
    *
@@ -790,7 +977,7 @@ public class SwerveSubsystem extends SubsystemBase
       return Double.NaN;
     }
 
-    LimelightHelpers.RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
+    LimelightHelpers.RawFiducial[] fiducials = getSafeRawFiducials(limelightName);
     double distanceSumMeters = 0.0;
     int allowedCount = 0;
 
