@@ -396,6 +396,10 @@ public class RobotContainer {
     // Driver one manual gyro zero: current facing becomes forward.
     driverOne.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
+
+    // Driver one Back: set swerve modules to X-lock stance to resist pushing when stationary.
+    driverOne.back().onTrue(Commands.runOnce(drivebase::lock));
+
     // Press left bumper to toggle always-on flywheel mode on/off.
     // This can disable always-on even when the constant default is true.
     new Trigger(driverOne.getHID()::getLeftBumperButton)
